@@ -72,7 +72,7 @@ static SceUID hook_export(int idx, char *mod, int libnid, int funcnid, void *fun
 #define HOOK_EXPORT(idx, mod, libnid, funcnid, func)\
 	hook_export(idx, mod, libnid, funcnid, func##_hook)
 
-static int sceIftuSetInputFrameBuffer_hook(int plane, SceIftuPlaneState *state, int mask, int mode) {
+static int sceIftuSetInputFrameBuffer_hook(int plane, SceIftuPlaneState *state, int bilinear, int sync_mode) {
 	if (state->src_w == 0xC000 && state->src_h == 0xC16D) {
 		state->src_w = state->src_h = 0x10000;
 		state->dst_x = (1280 - 960) / 2;
@@ -80,7 +80,10 @@ static int sceIftuSetInputFrameBuffer_hook(int plane, SceIftuPlaneState *state, 
 	} else if (state->src_w == 0x8000 && state->src_h == 0x80F3) {
 		state->src_h = state->src_w;
 	}
-	return TAI_CONTINUE(int, hook_ref[0], plane, state, mask, mode);
+
+	bilinear = (bilinear == 1) ? 0 : bilinear;
+
+	return TAI_CONTINUE(int, hook_ref[0], plane, state, bilinear, sync_mode);
 }
 
 static int sceDisplaySetScaleConf_hook(float scale, int head, int index, int mode) {
