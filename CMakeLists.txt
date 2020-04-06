@@ -27,6 +27,7 @@ set(SELF "${PROJECT_NAME}.skprx")
 
 add_executable("${ELF}"
   main.c
+  config.c
 )
 
 target_link_libraries("${ELF}"

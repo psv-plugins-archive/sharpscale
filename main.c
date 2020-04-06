@@ -31,6 +31,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <psp2kern/lowio/iftu.h>
 #include <taihen.h>
 #include "scedisplay.h"
+#include "config.h"
 
 #define GLZ(x) do {\
 	if ((x) < 0) { goto fail; }\
@@ -93,6 +94,8 @@ extern int module_get_offset(SceUID pid, SceUID modid, int segidx, size_t offset
 #define GET_OFFSET(modid, seg, ofs, addr)\
 	module_get_offset(KERNEL_PID, modid, seg, ofs, (uintptr_t*)addr)
 
+static sharpscale_config_t ss_config;
+
 // SceDisplay_8100B000
 static SceDisplayHead *head_data = 0;
 
@@ -143,24 +146,36 @@ static int sceIftuSetInputFrameBuffer_hook(int plane, SceIftuPlaneState *state, 
 	int head_w = head_data[cur_head_idx].head_w;
 	int head_h = head_data[cur_head_idx].head_h;
 
-	int scale_w = head_w / fb_w;
-	int scale_h = head_h / (fb_h - 16);
-	int scale = (scale_w < scale_h) ? scale_w : scale_h;
+	if (ss_config.mode == SHARPSCALE_MODE_INTEGER) {
+		int scale_w = head_w / fb_w;
+		int scale_h = head_h / (fb_h - 16);
+		int scale = (scale_w < scale_h) ? scale_w : scale_h;
 
-	if (scale > 0) {
-		state->src_w = 0x10000 / scale;
-		state->src_h = 0x10000 / scale;
+		if (scale > 0) {
+			state->src_w = 0x10000 / scale;
+			state->src_h = 0x10000 / scale;
 
-		state->dst_x = (head_w - fb_w * scale) / 2;
-		state->dst_y = (fb_h * scale <= head_h)
-			? (head_h - fb_h * scale) / 2
-			: 0;
+			state->dst_x = (head_w - fb_w * scale) / 2;
+			state->dst_y = (fb_h * scale <= head_h)
+				? (head_h - fb_h * scale) / 2
+				: 0;
+		}
+	} else if (ss_config.mode == SHARPSCALE_MODE_REAL) {
+		if (fb_w <= head_w && (fb_h - 16) <= head_h) {
+			state->src_w = 0x10000;
+			state->src_h = 0x10000;
+
+			state->dst_x = (head_w - fb_w) / 2;
+			state->dst_y = (fb_h <= head_h)
+				? (head_h - fb_h) / 2
+				: 0;
+		}
 	}
 
 	cur_head_idx = -1;
 
 done:
-	bilinear = (bilinear == 1) ? 0 : bilinear;
+	bilinear = (!ss_config.bilinear && bilinear == 1) ? 0 : bilinear;
 	return TAI_CONTINUE(int, hook_ref[2], plane, state, bilinear, sync_mode);
 }
 
@@ -189,6 +204,8 @@ static void cleanup(void) {
 int _start() __attribute__ ((weak, alias("module_start")));
 int module_start(SceSize argc, const void *argv) { (void)argc; (void)argv;
 	startup();
+
+	read_config(&ss_config);
 
 	tai_module_info_t minfo;
 	minfo.size = sizeof(minfo);
