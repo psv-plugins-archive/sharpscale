@@ -30,11 +30,13 @@ add_executable("${ELF}"
 )
 
 target_link_libraries("${ELF}"
+  gcc
   SceDebugForDriver_stub
   SceDisplayForDriver_stub
   SceIofilemgrForDriver_stub
   SceSysclibForDriver_stub
   taihenForKernel_stub
+  taihenModuleUtils_stub
 )
 
 dolce_create_self("${SELF}"
