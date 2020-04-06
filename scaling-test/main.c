@@ -15,16 +15,57 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <string.h>
+#include <psp2/ctrl.h>
 #include <psp2/display.h>
+#include <psp2/kernel/clib.h>
 #include <psp2/kernel/processmgr.h>
 #include <psp2/kernel/sysmem.h>
 
 #define ALIGN(x, a) (((x) + ((a) - 1)) & ~((a) - 1))
-#define FB_WIDTH 960
-#define FB_HEIGHT 544
-#define FB_LEN (FB_WIDTH * FB_HEIGHT * 4)
+
 #define WHITE 0xFFFFFFFF
 #define BLACK 0x00000000
+
+#define FB_WIDTH 960
+#define FB_HEIGHT 544
+#define FB_LEN (ALIGN(FB_WIDTH, 64) * FB_HEIGHT * 4)
+
+typedef struct {
+	int w;
+	int h;
+} res_t;
+
+#define FB_RES_LEN 4
+static res_t fb_res[FB_RES_LEN] = {
+	{480, 272},
+	{640, 368},
+	{720, 408},
+	{960, 544},
+};
+
+static void render(int *fb_base, int width, int pitch, int height) {
+	for (int i = 0; i < width/2; i++) {
+		for (int j = 0; j < height/2; j++) {
+			fb_base[j * pitch + i] = (j % 2 == 0) ? WHITE : BLACK;
+		}
+	}
+	for (int i = width/2; i < width; i++) {
+		for (int j = 0; j < height/2; j++) {
+			fb_base[j * pitch + i] = (i % 2 == 0) ? WHITE : BLACK;
+		}
+	}
+	for (int i = 0; i < width/2; i++) {
+		for (int j = height/2; j < height; j++) {
+			fb_base[j * pitch + i] = (i % 2 == 0) ? WHITE : BLACK;
+		}
+	}
+	for (int i = width/2; i < width; i++) {
+		for (int j = height/2; j < height; j++) {
+			fb_base[j * pitch + i] = (j % 2 == 0) ? WHITE : BLACK;
+		}
+	}
+}
 
 int main() {
 	SceUID mem_id = sceKernelAllocMemBlock(
@@ -36,38 +77,52 @@ int main() {
 	int *fb_base;
 	if (sceKernelGetMemBlockBase(mem_id, (void**)&fb_base) < 0) { goto free_mem; }
 
-	for (int i = 0; i < FB_WIDTH/2; i++) {
-		for (int j = 0; j < FB_HEIGHT/2; j++) {
-			fb_base[j * FB_WIDTH + i] = (j % 2 == 0) ? WHITE : BLACK;
-		}
-	}
-	for (int i = FB_WIDTH/2; i < FB_WIDTH; i++) {
-		for (int j = 0; j < FB_HEIGHT/2; j++) {
-			fb_base[j * FB_WIDTH + i] = (i % 2 == 0) ? WHITE : BLACK;
-		}
-	}
-	for (int i = 0; i < FB_WIDTH/2; i++) {
-		for (int j = FB_HEIGHT/2; j < FB_HEIGHT; j++) {
-			fb_base[j * FB_WIDTH + i] = (i % 2 == 0) ? WHITE : BLACK;
-		}
-	}
-	for (int i = FB_WIDTH/2; i < FB_WIDTH; i++) {
-		for (int j = FB_HEIGHT/2; j < FB_HEIGHT; j++) {
-			fb_base[j * FB_WIDTH + i] = (j % 2 == 0) ? WHITE : BLACK;
-		}
+	int width = 0;
+	int pitch = 0;
+	int height = 0;
+
+	void select_res(int idx) {
+		width = fb_res[idx].w;
+		pitch = ALIGN(width, 64);
+		height = fb_res[idx].h;
+		render(fb_base, width, pitch, height);
+		sceClibPrintf("Selected resolution %dx%d\n", width, height);
 	}
 
-	SceDisplayFrameBuf fb = {
-		sizeof(fb),
-		fb_base,
-		FB_WIDTH,
-		SCE_DISPLAY_PIXELFORMAT_A8B8G8R8,
-		FB_WIDTH,
-		FB_HEIGHT};
-	sceDisplaySetFrameBuf(&fb, SCE_DISPLAY_SETBUF_NEXTFRAME);
+	int res_idx = 0;
+	select_res(res_idx);
+
+	SceCtrlData last_ctrl;
+	memset(&last_ctrl, 0x00, sizeof(last_ctrl));
 
 	for (;;) {
-		sceKernelDelayThread(1000*1000);
+		SceCtrlData ctrl;
+		memset(&ctrl, 0x00, sizeof(ctrl));
+
+		if (sceCtrlReadBufferPositive(0, &ctrl, 1) == 1) {
+			int btns = ~last_ctrl.buttons & ctrl.buttons;
+
+			if (btns & SCE_CTRL_LEFT) {
+				res_idx = (res_idx - 1 < 0) ? FB_RES_LEN - 1 : res_idx - 1;
+				select_res(res_idx);
+			} else if (btns & SCE_CTRL_RIGHT) {
+				res_idx = (res_idx + 1 < FB_RES_LEN) ? res_idx + 1 : 0;
+				select_res(res_idx);
+			}
+		}
+
+		last_ctrl = ctrl;
+
+		SceDisplayFrameBuf fb = {
+			sizeof(fb),
+			fb_base,
+			pitch,
+			SCE_DISPLAY_PIXELFORMAT_A8B8G8R8,
+			width,
+			height
+		};
+		sceDisplaySetFrameBuf(&fb, SCE_DISPLAY_SETBUF_NEXTFRAME);
+		sceDisplayWaitVblankStartMulti(2);
 	}
 
 free_mem:

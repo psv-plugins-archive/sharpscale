@@ -19,14 +19,16 @@ set(VPK "${PROJECT_NAME}.vpk")
 
 set(TITLE_NAME "Scaling test")
 set(TITLE_ID "AKRK00004")
-set(TITLE_VER "01.00")
+set(TITLE_VER "01.01")
 
 add_executable("${ELF}"
   main.c
 )
 
 target_link_libraries("${ELF}"
+  SceCtrl_stub
   SceDisplay_stub
+  SceLibKernel_stub
 )
 
 dolce_create_self("${SELF}"
