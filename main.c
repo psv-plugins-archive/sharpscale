@@ -37,6 +37,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 	if ((x) < 0) { goto fail; }\
 } while (0)
 
+#define MIN(x, y) ((x) < (y) ? (x) : (y))
+
 __attribute__ ((__format__ (__printf__, 1, 2)))
 static void LOG(const char *fmt, ...) {
 	(void)fmt;
@@ -147,9 +149,7 @@ static int sceIftuSetInputFrameBuffer_hook(int plane, SceIftuPlaneState *state, 
 	int head_h = head_data[cur_head_idx].head_h;
 
 	if (ss_config.mode == SHARPSCALE_MODE_INTEGER) {
-		int scale_w = head_w / fb_w;
-		int scale_h = head_h / (fb_h - 16);
-		int scale = (scale_w < scale_h) ? scale_w : scale_h;
+		int scale = MIN(4, MIN(head_w / fb_w, head_h / (fb_h - 16)));
 
 		if (scale > 0) {
 			state->src_w = 0x10000 / scale;
