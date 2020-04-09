@@ -218,9 +218,11 @@ int module_start(SceSize argc, const void *argv) { (void)argc; (void)argv;
 	GLZ(HOOK_OFFSET(1, minfo.modid, 0x004, prepare_fb_compat));
 	GLZ(HOOK_IMPORT(2, "SceDisplay", 0xCAFCFE50, 0x7CE0C4DA, sceIftuSetInputFrameBuffer));
 
-	GLZ(HOOK_EXPORT(3, "SceDisplay", 0x9FED47AC, 0xEB390A76, sceDisplaySetScaleConf));
-	LOG("Disable scaling head 1 fb 0 ret %08X\n", ksceDisplaySetScaleConf(1.0f, 1, 0, 0));
-	LOG("Disable scaling head 1 fb 1 ret %08X\n", ksceDisplaySetScaleConf(1.0f, 1, 1, 0));
+	if (ss_config.mode != SHARPSCALE_MODE_ORIGINAL) {
+		GLZ(HOOK_EXPORT(3, "SceDisplay", 0x9FED47AC, 0xEB390A76, sceDisplaySetScaleConf));
+		LOG("Disable scaling head 1 fb 0 ret %08X\n", ksceDisplaySetScaleConf(1.0f, 1, 0, 0));
+		LOG("Disable scaling head 1 fb 1 ret %08X\n", ksceDisplaySetScaleConf(1.0f, 1, 1, 0));
+	}
 
 	return SCE_KERNEL_START_SUCCESS;
 
