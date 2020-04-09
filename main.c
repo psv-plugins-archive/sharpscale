@@ -148,27 +148,30 @@ static int sceIftuSetInputFrameBuffer_hook(int plane, SceIftuPlaneState *state, 
 	int head_w = head_data[cur_head_idx].head_w;
 	int head_h = head_data[cur_head_idx].head_h;
 
+	int scale = 0;
+
 	if (ss_config.mode == SHARPSCALE_MODE_INTEGER) {
-		int scale = MIN(4, MIN(head_w / fb_w, head_h / (fb_h - 16)));
-
-		if (scale > 0) {
-			state->src_w = 0x10000 / scale;
-			state->src_h = 0x10000 / scale;
-
-			state->dst_x = (head_w - fb_w * scale) / 2;
-			state->dst_y = (fb_h * scale <= head_h)
-				? (head_h - fb_h * scale) / 2
-				: 0;
-		}
+		scale = MIN(4, MIN(head_w / fb_w, head_h / (fb_h - 16)));
 	} else if (ss_config.mode == SHARPSCALE_MODE_REAL) {
-		if (fb_w <= head_w && (fb_h - 16) <= head_h) {
-			state->src_w = 0x10000;
-			state->src_h = 0x10000;
+		scale = (fb_w <= head_w && (fb_h - 16) <= head_h) ? 1 : 0;
+	}
 
-			state->dst_x = (head_w - fb_w) / 2;
-			state->dst_y = (fb_h <= head_h)
-				? (head_h - fb_h) / 2
-				: 0;
+	if (scale > 0) {
+		state->src_w = 0x10000 / scale;
+		state->src_h = 0x10000 / scale;
+
+		fb_w *= scale;
+		fb_h *= scale;
+
+		state->src_x = 0;
+		state->dst_x = (head_w - fb_w) / 2;
+
+		if (fb_h <= head_h) {
+			state->src_y = 0;
+			state->dst_y = (head_h - fb_h) / 2;
+		} else {
+			state->src_y = MIN(0x400 - 1, (fb_h - head_h) * 0x100 / (2 * scale));
+			state->dst_y = 0;
 		}
 	}
 
