@@ -19,7 +19,7 @@ set(VPK "${PROJECT_NAME}.vpk")
 
 set(TITLE_NAME "Scaling test")
 set(TITLE_ID "AKRK00004")
-set(TITLE_VER "01.01")
+set(TITLE_VER "01.02")
 
 add_executable("${ELF}"
   main.c

@@ -26,6 +26,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define WHITE 0xFFFFFFFF
 #define BLACK 0x00000000
+#define RED   0xFF0000FF
+#define BLUE  0xFFFF0000
 
 #define FB_WIDTH 960
 #define FB_HEIGHT 544
@@ -63,6 +65,25 @@ static void render(int *fb_base, int width, int pitch, int height) {
 	for (int i = width/2; i < width; i++) {
 		for (int j = height/2; j < height; j++) {
 			fb_base[j * pitch + i] = (j % 2 == 0) ? WHITE : BLACK;
+		}
+	}
+
+	int crop = 0;
+
+	if (width == 480 && height == 272) {
+		crop = 1;
+	} else if (width == 640 && height == 368) {
+		crop = 4;
+	} else if (width == 960 && height == 544) {
+		crop = 2;
+	}
+
+	if (crop > 0) {
+		for (int i = 0; i < width; i++) {
+			fb_base[(crop - 1) * pitch + i] = RED;
+			fb_base[(crop - 0) * pitch + i] = BLUE;
+			fb_base[(height - crop - 1) * pitch + i] = BLUE;
+			fb_base[(height - crop - 0) * pitch + i] = RED;
 		}
 	}
 }
