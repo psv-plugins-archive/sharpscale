@@ -15,33 +15,24 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <stdlib.h>
-#include <string.h>
 #include <psp2kern/io/fcntl.h>
 #include <psp2kern/io/stat.h>
 #include "config.h"
 
-#define CONFIG_PATH "ur0:/data/sharpscale/config.txt"
-
-void read_config(sharpscale_config_t *config) {
+void read_config(SharpscaleConfig *config) {
 	SceUID fd = ksceIoOpen(CONFIG_PATH, SCE_O_RDONLY, 0);
 	if (fd < 0) { goto fail; }
 
-	char buf[4];
-	memset(buf, 0x00, sizeof(buf));
-	int ret = ksceIoRead(fd, buf, sizeof(buf) - 1);
+	int ret = ksceIoRead(fd, config, sizeof(*config));
 	ksceIoClose(fd);
-	if (ret != sizeof(buf) - 1) { goto fail; }
+	if (ret != sizeof(*config)) { goto fail; }
 
-	config->mode = strtol(buf, NULL, 10);
-	config->bilinear = strtol(buf + 2, NULL, 10);
-
-	if (config->mode < 0 || 2 < config->mode) { goto fail; }
-	if ((config->bilinear & ~1) != 0) { goto fail; }
+	if (SHARPSCALE_MODE_INVALID <= config->mode) { goto fail; }
+	if (config->bilinear != false && config->bilinear != true) { goto fail; }
 
 	return;
 
 fail:
 	config->mode = SHARPSCALE_MODE_INTEGER;
-	config->bilinear = 0;
+	config->bilinear = false;
 }

@@ -96,7 +96,7 @@ extern int module_get_offset(SceUID pid, SceUID modid, int segidx, size_t offset
 #define GET_OFFSET(modid, seg, ofs, addr)\
 	module_get_offset(KERNEL_PID, modid, seg, ofs, (uintptr_t*)addr)
 
-static sharpscale_config_t ss_config;
+static SharpscaleConfig ss_config;
 
 // SceDisplay_8100B000
 static SceDisplayHead *head_data = 0;

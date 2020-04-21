@@ -1,15 +1,22 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#define SHARPSCALE_MODE_ORIGINAL 0
-#define SHARPSCALE_MODE_INTEGER  1
-#define SHARPSCALE_MODE_REAL     2
+#include <stdbool.h>
 
-typedef struct {
-	int mode;
-	int bilinear;
-} sharpscale_config_t;
+#define CONFIG_PATH "ur0:/data/sharpscale/config.bin"
 
-void read_config(sharpscale_config_t *config);
+typedef enum SharpscaleMode {
+	SHARPSCALE_MODE_ORIGINAL,
+	SHARPSCALE_MODE_INTEGER,
+	SHARPSCALE_MODE_REAL,
+	SHARPSCALE_MODE_INVALID,
+} SharpscaleMode;
+
+typedef struct SharpscaleConfig {
+	SharpscaleMode mode;
+	bool bilinear;
+} SharpscaleConfig;
+
+void read_config(SharpscaleConfig *config);
 
 #endif
