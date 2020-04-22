@@ -8,11 +8,11 @@ if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
   endif()
 endif()
 
-project(sharpscale LANGUAGES C)
 include("$ENV{DOLCESDK}/share/dolce.cmake" REQUIRED)
 
+project(sharpscale LANGUAGES C)
+
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -nostdlib -Wall -Wextra -O3 -std=c99")
-set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -nostdlib")
 
 if(LOG_PRINTF)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLOG_PRINTF")
@@ -35,6 +35,7 @@ target_link_libraries("${ELF}"
   SceDebugForDriver_stub
   SceDisplayForDriver_stub
   SceIofilemgrForDriver_stub
+  SceSblACMgrForDriver_stub
   SceSysclibForDriver_stub
   taihenForKernel_stub
   taihenModuleUtils_stub

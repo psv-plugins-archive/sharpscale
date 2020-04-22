@@ -28,11 +28,13 @@ void read_config(SharpscaleConfig *config) {
 	if (ret != sizeof(*config)) { goto fail; }
 
 	if (SHARPSCALE_MODE_INVALID <= config->mode) { goto fail; }
+	if (SHARPSCALE_PSONE_MODE_INVALID <= config->psone_mode) { goto fail; }
 	if (config->bilinear != false && config->bilinear != true) { goto fail; }
 
 	return;
 
 fail:
 	config->mode = SHARPSCALE_MODE_INTEGER;
+	config->psone_mode = SHARPSCALE_PSONE_MODE_4_3;
 	config->bilinear = false;
 }

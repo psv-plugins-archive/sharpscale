@@ -29,6 +29,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <psp2kern/kernel/modulemgr.h>
 #include <psp2kern/kernel/sysmem.h>
 #include <psp2kern/lowio/iftu.h>
+#include <psp2kern/sblacmgr.h>
 #include <taihen.h>
 #include "scedisplay.h"
 #include "config.h"
@@ -148,6 +149,25 @@ static int sceIftuSetInputFrameBuffer_hook(int plane, SceIftuPlaneState *state, 
 	int head_w = head_data[cur_head_idx].head_w;
 	int head_h = head_data[cur_head_idx].head_h;
 
+	int ar_numer = 1;
+	int ar_denom = 1;
+
+	if (ss_config.psone_mode != SHARPSCALE_PSONE_MODE_PIXEL
+			&& (fb_w < 960 && fb_h < 544)
+			&& !(fb_w == 480 && fb_h == 272)
+			&& ksceSblACMgrIsPspEmu(SCE_KERNEL_PROCESS_ID_SELF)) {
+
+		if (ss_config.psone_mode == SHARPSCALE_PSONE_MODE_4_3) {
+			ar_numer = 4 * fb_h;
+			ar_denom = 3 * fb_w;
+			fb_w = ar_numer / 3;
+		} else if (ss_config.psone_mode == SHARPSCALE_PSONE_MODE_16_9) {
+			ar_numer = 16 * fb_h;
+			ar_denom = 9 * fb_w;
+			fb_w = ar_numer / 9;
+		}
+	}
+
 	int scale = 0;
 
 	if (ss_config.mode == SHARPSCALE_MODE_INTEGER) {
@@ -156,8 +176,12 @@ static int sceIftuSetInputFrameBuffer_hook(int plane, SceIftuPlaneState *state, 
 		scale = (fb_w <= head_w && (fb_h - 16) <= head_h) ? 1 : 0;
 	}
 
+	while (scale > 0 && 0x10000 * ar_denom / (scale * ar_numer) < 0x10000 / 4) {
+		scale--;
+	}
+
 	if (scale > 0) {
-		state->src_w = 0x10000 / scale;
+		state->src_w = 0x10000 * ar_denom / (scale * ar_numer);
 		state->src_h = 0x10000 / scale;
 
 		fb_w *= scale;
