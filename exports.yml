@@ -6,3 +6,9 @@ Sharpscale:
   main:
     start: module_start
     stop: module_stop
+  modules:
+    Sharpscale:
+      syscall: true
+      functions:
+        - SharpscaleGetConfig
+        - SharpscaleSetConfig

@@ -97,7 +97,7 @@ extern int module_get_offset(SceUID pid, SceUID modid, int segidx, size_t offset
 #define GET_OFFSET(modid, seg, ofs, addr)\
 	module_get_offset(KERNEL_PID, modid, seg, ofs, (uintptr_t*)addr)
 
-static SharpscaleConfig ss_config;
+extern SharpscaleConfig ss_config;
 
 // SceDisplay_8100B000
 static SceDisplayHead *head_data = 0;
@@ -232,7 +232,9 @@ int _start() __attribute__ ((weak, alias("module_start")));
 int module_start(SceSize argc, const void *argv) { (void)argc; (void)argv;
 	startup();
 
-	read_config(&ss_config);
+	if (read_config(&ss_config) < 0) {
+		reset_config(&ss_config);
+	}
 
 	tai_module_info_t minfo;
 	minfo.size = sizeof(minfo);

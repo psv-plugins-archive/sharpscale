@@ -15,11 +15,32 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <string.h>
 #include <psp2kern/io/fcntl.h>
 #include <psp2kern/io/stat.h>
+#include <psp2kern/kernel/sysmem.h>
 #include "config.h"
 
-void read_config(SharpscaleConfig *config) {
+#define BASE_PATH     "ur0:/data"
+#define SS_BASE_PATH  BASE_PATH"/sharpscale"
+#define CONFIG_PATH   SS_BASE_PATH"/config.bin"
+
+SharpscaleConfig ss_config;
+
+static bool is_config_valid(SharpscaleConfig *config) {
+	return config->mode < SHARPSCALE_MODE_INVALID
+		&& config->psone_mode < SHARPSCALE_PSONE_MODE_INVALID
+		&& (config->bilinear == true || config->bilinear == false);
+}
+
+int reset_config(SharpscaleConfig *config) {
+	config->mode = SHARPSCALE_MODE_INTEGER;
+	config->psone_mode = SHARPSCALE_PSONE_MODE_4_3;
+	config->bilinear = false;
+	return 0;
+}
+
+int read_config(SharpscaleConfig *config) {
 	SceUID fd = ksceIoOpen(CONFIG_PATH, SCE_O_RDONLY, 0);
 	if (fd < 0) { goto fail; }
 
@@ -27,14 +48,48 @@ void read_config(SharpscaleConfig *config) {
 	ksceIoClose(fd);
 	if (ret != sizeof(*config)) { goto fail; }
 
-	if (SHARPSCALE_MODE_INVALID <= config->mode) { goto fail; }
-	if (SHARPSCALE_PSONE_MODE_INVALID <= config->psone_mode) { goto fail; }
-	if (config->bilinear != false && config->bilinear != true) { goto fail; }
+	if (!is_config_valid(config)) { goto fail; }
 
-	return;
+	return 0;
 
 fail:
-	config->mode = SHARPSCALE_MODE_INTEGER;
-	config->psone_mode = SHARPSCALE_PSONE_MODE_4_3;
-	config->bilinear = false;
+	return -1;
+}
+
+int write_config(SharpscaleConfig *config) {
+	if (!is_config_valid(config)) { goto fail; }
+
+	ksceIoMkdir(BASE_PATH, 0777);
+	ksceIoMkdir(SS_BASE_PATH, 0777);
+	SceUID fd = ksceIoOpen(CONFIG_PATH, SCE_O_WRONLY | SCE_O_CREAT, 0777);
+	if (fd < 0) { goto fail; }
+
+	int ret = ksceIoWrite(fd, config, sizeof(*config));
+	ksceIoClose(fd);
+	if (ret != sizeof(*config)) { goto fail; }
+
+	return 0;
+
+fail:
+	return -1;
+}
+
+int SharpscaleGetConfig(SharpscaleConfig *config) {
+	if (!is_config_valid(&ss_config)) { goto fail; }
+	return ksceKernelMemcpyKernelToUser((uintptr_t)config, &ss_config, sizeof(*config));
+
+fail:
+	return -1;
+}
+
+int SharpscaleSetConfig(SharpscaleConfig *config) {
+	SharpscaleConfig kconfig;
+	int ret = ksceKernelMemcpyUserToKernel(&kconfig, (uintptr_t)config, sizeof(kconfig));
+	if (ret < 0) { goto fail; }
+	if (!is_config_valid(&kconfig)) { goto fail; }
+	memcpy(&ss_config, &kconfig, sizeof(ss_config));
+	return write_config(&ss_config);
+
+fail:
+	return -1;
 }
