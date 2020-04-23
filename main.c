@@ -65,17 +65,9 @@ static void LOG(const char *fmt, ...) {
 	#endif
 }
 
-#define N_HOOK 4
+#define N_HOOK 3
 static SceUID hook_id[N_HOOK];
 static tai_hook_ref_t hook_ref[N_HOOK];
-
-static SceUID hook_export(int idx, char *mod, int libnid, int funcnid, void *func) {
-	hook_id[idx] = taiHookFunctionExportForKernel(KERNEL_PID, hook_ref+idx, mod, libnid, funcnid, func);
-	LOG("Hooked %d UID %08X\n", idx, hook_id[idx]);
-	return hook_id[idx];
-}
-#define HOOK_EXPORT(idx, mod, libnid, funcnid, func)\
-	hook_export(idx, mod, libnid, funcnid, func##_hook)
 
 static SceUID hook_import(int idx, char *mod, int libnid, int funcnid, void *func) {
 	hook_id[idx] = taiHookFunctionImportForKernel(KERNEL_PID, hook_ref+idx, mod, libnid, funcnid, func);
@@ -206,14 +198,6 @@ done:
 	return TAI_CONTINUE(int, hook_ref[2], plane, state, bilinear, sync_mode);
 }
 
-static int sceDisplaySetScaleConf_hook(float scale, int head, int index, int mode) {
-	if (head == 1) {
-		scale = 1.0f;
-		mode = 0;
-	}
-	return TAI_CONTINUE(int, hook_ref[3], scale, head, index, mode);
-}
-
 static void startup(void) {
 	memset(hook_id, 0xFF, sizeof(hook_id));
 	memset(hook_ref, 0xFF, sizeof(hook_ref));
@@ -246,12 +230,6 @@ int module_start(SceSize argc, const void *argv) { (void)argc; (void)argv;
 	GLZ(HOOK_OFFSET(0, minfo.modid, 0x2CC, prepare_set_fb));
 	GLZ(HOOK_OFFSET(1, minfo.modid, 0x004, prepare_fb_compat));
 	GLZ(HOOK_IMPORT(2, "SceDisplay", 0xCAFCFE50, 0x7CE0C4DA, sceIftuSetInputFrameBuffer));
-
-	if (ss_config.mode != SHARPSCALE_MODE_ORIGINAL) {
-		GLZ(HOOK_EXPORT(3, "SceDisplay", 0x9FED47AC, 0xEB390A76, sceDisplaySetScaleConf));
-		LOG("Disable scaling head 1 fb 0 ret %08X\n", ksceDisplaySetScaleConf(1.0f, 1, 0, 0));
-		LOG("Disable scaling head 1 fb 1 ret %08X\n", ksceDisplaySetScaleConf(1.0f, 1, 1, 0));
-	}
 
 	return SCE_KERNEL_START_SUCCESS;
 
