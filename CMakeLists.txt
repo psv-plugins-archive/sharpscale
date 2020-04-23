@@ -36,6 +36,7 @@ target_link_options("${ELF}"
 
 target_link_libraries("${ELF}"
   gcc
+  m
   SceDebugForDriver_stub
   SceDisplayForDriver_stub
   SceIofilemgrForDriver_stub

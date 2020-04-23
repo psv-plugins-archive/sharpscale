@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // SceLowio: xerpi
 // Author: 浅倉麗子
 
+#include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -141,8 +142,7 @@ static int sceIftuSetInputFrameBuffer_hook(int plane, SceIftuPlaneState *state, 
 	int head_w = head_data[cur_head_idx].head_w;
 	int head_h = head_data[cur_head_idx].head_h;
 
-	int ar_numer = 1;
-	int ar_denom = 1;
+	float ar_scale = 1.0;
 
 	if (ss_config.psone_mode != SHARPSCALE_PSONE_MODE_PIXEL
 			&& (fb_w < 960 && fb_h < 544)
@@ -150,34 +150,30 @@ static int sceIftuSetInputFrameBuffer_hook(int plane, SceIftuPlaneState *state, 
 			&& ksceSblACMgrIsPspEmu(SCE_KERNEL_PROCESS_ID_SELF)) {
 
 		if (ss_config.psone_mode == SHARPSCALE_PSONE_MODE_4_3) {
-			ar_numer = 4 * fb_h;
-			ar_denom = 3 * fb_w;
-			fb_w = ar_numer / 3;
+			ar_scale = (float)(4 * fb_h) / (float)(3 * fb_w);
+			fb_w = lroundf((float)(4 * fb_h) / 3.0);
 		} else if (ss_config.psone_mode == SHARPSCALE_PSONE_MODE_16_9) {
-			ar_numer = 16 * fb_h;
-			ar_denom = 9 * fb_w;
-			fb_w = ar_numer / 9;
+			ar_scale = (float)(16 * fb_h) / (float)(9 * fb_w);
+			fb_w = lroundf((float)(16 * fb_h) / 9.0);
 		}
 	}
 
-	int scale = 0;
+	float scale = 0.0;
 
 	if (ss_config.mode == SHARPSCALE_MODE_INTEGER) {
-		scale = MIN(4, MIN(head_w / fb_w, head_h / (fb_h - 16)));
+		scale = fminf(4.0, (float)MIN(head_w / fb_w, head_h / (fb_h - 16)));
+		scale = floorf(fminf(scale, 4.0 / ar_scale));
 	} else if (ss_config.mode == SHARPSCALE_MODE_REAL) {
-		scale = (fb_w <= head_w && (fb_h - 16) <= head_h) ? 1 : 0;
+		scale = (fb_w <= head_w && (fb_h - 16) <= head_h) ? 1.0 : 0.0;
+		scale = floorf(fminf(scale, 4.0 / ar_scale));
 	}
 
-	while (scale > 0 && 0x10000 * ar_denom / (scale * ar_numer) < 0x10000 / 4) {
-		scale--;
-	}
+	if (isgreater(scale, 0.0)) {
+		state->src_w = lroundf(65536.0 / scale / ar_scale);
+		state->src_h = lroundf(65536.0 / scale);
 
-	if (scale > 0) {
-		state->src_w = 0x10000 * ar_denom / (scale * ar_numer);
-		state->src_h = 0x10000 / scale;
-
-		fb_w *= scale;
-		fb_h *= scale;
+		fb_w = lroundf((float)cur_fb_w * scale * ar_scale);
+		fb_h = lroundf((float)cur_fb_h * scale);
 
 		state->src_x = 0;
 		state->dst_x = (head_w - fb_w) / 2;
@@ -186,7 +182,8 @@ static int sceIftuSetInputFrameBuffer_hook(int plane, SceIftuPlaneState *state, 
 			state->src_y = 0;
 			state->dst_y = (head_h - fb_h) / 2;
 		} else {
-			state->src_y = MIN(0x400 - 1, (fb_h - head_h) * 0x100 / (2 * scale));
+			state->src_y = lroundf((float)((fb_h - head_h) * (0x100 / 2)) / scale);
+			state->src_y = MIN(4 * 0x100 - 1, state->src_y);
 			state->dst_y = 0;
 		}
 	}
