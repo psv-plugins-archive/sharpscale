@@ -166,9 +166,13 @@ static int sceIftuSetInputFrameBuffer_hook(int plane, SceIftuPlaneState *state, 
 	} else if (ss_config.mode == SHARPSCALE_MODE_REAL) {
 		scale = (fb_w <= head_w && (fb_h - 16) <= head_h) ? 1.0 : 0.0;
 		scale = floorf(fminf(scale, 4.0 / ar_scale));
+	} else if (ss_config.mode == SHARPSCALE_MODE_FITTED) {
+		scale = fminf((float)head_w / (float)fb_w, (float)head_h / (float)fb_h);
+		scale = fminf(scale, 4.0 / ar_scale);
+		scale = fminf(scale, 4.0);
 	}
 
-	if (isgreater(scale, 0.0)) {
+	if (isgreater(scale, 0.125)) {
 		state->src_w = lroundf(65536.0 / scale / ar_scale);
 		state->src_h = lroundf(65536.0 / scale);
 

@@ -13,12 +13,13 @@ Sharpscale can be configured to different scaling methods.
 - Original: system default
 - Integer: scale by multiplying the width and height of the framebuffer by the largest integer less than or equal to four such that the product width and height is less than or equal to the display width and height, respectively
 - Real: no scaling
+- Fitted: scale the framebuffer up to four times larger or eight times smaller to fit exactly within the display while preserving aspect ratio
 
 In integer and real modes, a few lines may be cropped from the top and bottom to preserve aspect ratio of the framebuffer.
 
 #### PS1 aspect ratio modes
 
-PS1 aspect ratio modes only take effect in integer or real scaling modes but is applied before scaling.
+PS1 aspect ratio modes only take effect in integer, real, and fitted scaling modes and is applied before scaling.
 
 - Pixel: aspect ratio of the framebuffer
 - 4∶3: aspect ratio is forced to 4∶3
@@ -27,6 +28,7 @@ PS1 aspect ratio modes only take effect in integer or real scaling modes but is 
 Scaling and PS1 aspect ratio will not apply when
 
 - in integer and real modes, if the framebuffer is already larger than the display
+- in fitted mode, if the framebuffer is too big to be scaled
 - in 4∶3 and 16∶9 modes, aspect ratio is too different to be forced
 
 #### Bilinear filtering
