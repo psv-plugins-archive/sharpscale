@@ -47,23 +47,27 @@ ur0:tai/sharpscale.skprx
 
 ## Configuration
 
-Configuration is provided by a text file at `ur0:/data/sharpscale/config.txt` containing two numbers separated by a space.
-
-1. Scaling mode
-	- `0` original
-	- `1` integer
-	- `2` real
-2. Bilinear filtering
-	- `0` off
-	- `1` on
-
-For example, to use integer mode and turn off bilinear filtering, write `1 0` in the text file.
+Use the provided configuration app to change settings instantly without needing to close the foreground application or needing to reboot.
 
 ## Scaling test
 
 The scaling test program shows horizontal and vertical lines 1 pixel wide alternating between black and white. Use the left and right buttons to cycle between framebuffer resolutions.
 
 **Warning:** Do not use when HDMI is set to interlaced mode.
+
+## Building
+
+Use [DolceSDK](https://forum.devchroma.nl/index.php/topic,129.0.html) and [libvita2d_sys](https://github.com/GrapheneCt/libvita2d_sys) to build. The following modifications to libvita2d_sys are required to reduce memory usage:
+
+```
+DEFAULT_TEMP_POOL_SIZE      128 KiB
+PARAMETER_BUFFER_SIZE       256 KiB
+VDM_RING_BUFFER_SIZE         32 KiB
+VERTEX_RING_BUFFER_SIZE     128 KiB
+FRAGMENT_RING_BUFFER_SIZE    64 KiB
+
+Remove the stencil buffer
+```
 
 ## Credits
 

@@ -59,3 +59,5 @@ dolce_create_stubs("${PROJECT_NAME}-stubs"
   KERNEL
   LIB Sharpscale_stub
 )
+
+add_subdirectory(config-app)
