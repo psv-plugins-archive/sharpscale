@@ -86,6 +86,17 @@ static SceUID hook_offset(int idx, int mod, int ofs, void *func) {
 #define HOOK_OFFSET(idx, mod, ofs, func)\
 	hook_offset(idx, mod, ofs, func##_hook)
 
+static int UNHOOK(int idx) {
+	int ret = 0;
+	if (hook_id[idx] >= 0) {
+		ret = taiHookReleaseForKernel(hook_id[idx], hook_ref[idx]);
+		LOG("Unhooked %d UID %08X\n", idx, hook_id[idx]);
+		hook_id[idx] = -1;
+		hook_ref[idx] = -1;
+	}
+	return ret;
+}
+
 extern int module_get_offset(SceUID pid, SceUID modid, int segidx, size_t offset, uintptr_t *addr);
 #define GET_OFFSET(modid, seg, ofs, addr)\
 	module_get_offset(KERNEL_PID, modid, seg, ofs, (uintptr_t*)addr)
@@ -205,12 +216,7 @@ static void startup(void) {
 }
 
 static void cleanup(void) {
-	for (int i = 0; i < N_HOOK; i++) {
-		if (hook_id[i] >= 0) {
-			taiHookReleaseForKernel(hook_id[i], hook_ref[i]);
-			LOG("Unhooked %d UID %08X\n", i, hook_id[i]);
-		}
-	}
+	for (int i = 0; i < N_HOOK; i++) { UNHOOK(i); }
 }
 
 int _start() __attribute__ ((weak, alias("module_start")));
