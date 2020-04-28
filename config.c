@@ -20,6 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <psp2kern/io/stat.h>
 #include <psp2kern/kernel/sysmem.h>
 #include "config.h"
+#include "sharpscale_internal.h"
 
 #define BASE_PATH     "ur0:/data"
 #define SS_BASE_PATH  BASE_PATH"/sharpscale"
@@ -30,13 +31,15 @@ SharpscaleConfig ss_config;
 static bool is_config_valid(SharpscaleConfig *config) {
 	return config->mode < SHARPSCALE_MODE_INVALID
 		&& config->psone_mode < SHARPSCALE_PSONE_MODE_INVALID
-		&& (config->bilinear == true || config->bilinear == false);
+		&& (config->bilinear == true || config->bilinear == false)
+		&& (config->full_hd == true || config->full_hd == false);
 }
 
 int reset_config(SharpscaleConfig *config) {
 	config->mode = SHARPSCALE_MODE_INTEGER;
 	config->psone_mode = SHARPSCALE_PSONE_MODE_4_3;
 	config->bilinear = false;
+	config->full_hd = false;
 	return 0;
 }
 
@@ -87,6 +90,7 @@ int SharpscaleSetConfig(SharpscaleConfig *config) {
 	int ret = ksceKernelMemcpyUserToKernel(&kconfig, (uintptr_t)config, sizeof(kconfig));
 	if (ret < 0) { goto fail; }
 	if (!is_config_valid(&kconfig)) { goto fail; }
+	if (set_full_hd(kconfig.full_hd) < 0) { goto fail; }
 	memcpy(&ss_config, &kconfig, sizeof(ss_config));
 	return write_config(&ss_config);
 

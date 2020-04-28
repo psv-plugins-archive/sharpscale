@@ -32,8 +32,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <psp2kern/lowio/iftu.h>
 #include <psp2kern/sblacmgr.h>
 #include <taihen.h>
-#include "scedisplay.h"
 #include "config.h"
+#include "scedisplay.h"
+#include "sharpscale_internal.h"
 
 #define GLZ(x) do {\
 	if ((x) < 0) { goto fail; }\
@@ -66,9 +67,18 @@ static void LOG(const char *fmt, ...) {
 	#endif
 }
 
+#define N_INJECT 5
+static SceUID inject_id[N_INJECT];
+
 #define N_HOOK 3
 static SceUID hook_id[N_HOOK];
 static tai_hook_ref_t hook_ref[N_HOOK];
+
+static SceUID INJECT_DATA(int idx, int mod, int seg, int ofs, void *data, int size) {
+	inject_id[idx] = taiInjectDataForKernel(KERNEL_PID, mod, seg, ofs, data, size);
+	LOG("Injected %d UID %08X\n", idx, inject_id[idx]);
+	return inject_id[idx];
+}
 
 static SceUID hook_import(int idx, char *mod, int libnid, int funcnid, void *func) {
 	hook_id[idx] = taiHookFunctionImportForKernel(KERNEL_PID, hook_ref+idx, mod, libnid, funcnid, func);
@@ -86,6 +96,16 @@ static SceUID hook_offset(int idx, int mod, int ofs, void *func) {
 #define HOOK_OFFSET(idx, mod, ofs, func)\
 	hook_offset(idx, mod, ofs, func##_hook)
 
+static int UNINJECT(int idx) {
+	int ret = 0;
+	if (inject_id[idx] >= 0) {
+		ret = taiInjectReleaseForKernel(inject_id[idx]);
+		LOG("Uninjected %d UID %08X\n", idx, inject_id[idx]);
+		inject_id[idx] = -1;
+	}
+	return ret;
+}
+
 static int UNHOOK(int idx) {
 	int ret = 0;
 	if (hook_id[idx] >= 0) {
@@ -102,6 +122,8 @@ extern int module_get_offset(SceUID pid, SceUID modid, int segidx, size_t offset
 	module_get_offset(KERNEL_PID, modid, seg, ofs, (uintptr_t*)addr)
 
 extern SharpscaleConfig ss_config;
+
+static int scedisplay_uid = -1;
 
 // SceDisplay_8100B000
 static SceDisplayHead *head_data = 0;
@@ -210,12 +232,46 @@ done:
 	return TAI_CONTINUE(int, hook_ref[2], plane, state, bilinear, sync_mode);
 }
 
+int set_full_hd(bool enable) {
+	static int enabled = 0;
+	int ret = 0;
+
+	if (enable) {
+		if (!enabled) {
+			// authority ID check
+			char movw_r0_0[] = "\x40\xf2\x00\x00";
+			GLZ(ret = INJECT_DATA(0, scedisplay_uid, 0, 0x40A6, movw_r0_0, 4));
+			GLZ(ret = INJECT_DATA(1, scedisplay_uid, 0, 0x434E, movw_r0_0, 4));
+			GLZ(ret = INJECT_DATA(2, scedisplay_uid, 0, 0x46D2, movw_r0_0, 4));
+			GLZ(ret = INJECT_DATA(3, scedisplay_uid, 0, 0x47FC, movw_r0_0, 4));
+
+			// framebuffer flags check
+			char cmpw_r3_r3[] = "\xb3\xeb\x03\x0f";
+			GLZ(ret = INJECT_DATA(4, scedisplay_uid, 0, 0x4812, cmpw_r3_r3, 4));
+
+			enabled = 1;
+			ret = 0;
+		}
+		goto done;
+	} else if (!enabled) {
+		goto done;
+	}
+
+fail:
+	for (int i = 0; i < 5; i++) { UNINJECT(i); }
+	enabled = 0;
+done:
+	return ret;
+}
+
 static void startup(void) {
+	memset(inject_id, 0xFF, sizeof(inject_id));
 	memset(hook_id, 0xFF, sizeof(hook_id));
 	memset(hook_ref, 0xFF, sizeof(hook_ref));
 }
 
 static void cleanup(void) {
+	for (int i = 0; i < N_INJECT; i++) { UNINJECT(i); }
 	for (int i = 0; i < N_HOOK; i++) { UNHOOK(i); }
 }
 
@@ -230,13 +286,16 @@ int module_start(SceSize argc, const void *argv) { (void)argc; (void)argv;
 	tai_module_info_t minfo;
 	minfo.size = sizeof(minfo);
 	GLZ(taiGetModuleInfoForKernel(KERNEL_PID, "SceDisplay", &minfo));
+	scedisplay_uid = minfo.modid;
 
-	GLZ(GET_OFFSET(minfo.modid, 1, 0x000, &head_data));
-	GLZ(GET_OFFSET(minfo.modid, 1, 0x1D4, &primary_head_idx));
+	GLZ(GET_OFFSET(scedisplay_uid, 1, 0x000, &head_data));
+	GLZ(GET_OFFSET(scedisplay_uid, 1, 0x1D4, &primary_head_idx));
 
-	GLZ(HOOK_OFFSET(0, minfo.modid, 0x2CC, prepare_set_fb));
-	GLZ(HOOK_OFFSET(1, minfo.modid, 0x004, prepare_fb_compat));
+	GLZ(HOOK_OFFSET(0, scedisplay_uid, 0x2CC, prepare_set_fb));
+	GLZ(HOOK_OFFSET(1, scedisplay_uid, 0x004, prepare_fb_compat));
 	GLZ(HOOK_IMPORT(2, "SceDisplay", 0xCAFCFE50, 0x7CE0C4DA, sceIftuSetInputFrameBuffer));
+
+	GLZ(set_full_hd(ss_config.full_hd));
 
 	return SCE_KERNEL_START_SUCCESS;
 

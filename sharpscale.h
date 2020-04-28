@@ -22,6 +22,7 @@ typedef struct SharpscaleConfig {
 	SharpscaleMode mode;
 	SharpscalePSOneMode psone_mode;
 	bool bilinear;
+	bool full_hd;
 } SharpscaleConfig;
 
 int SharpscaleGetConfig(SharpscaleConfig *config);

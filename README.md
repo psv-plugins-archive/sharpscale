@@ -36,6 +36,11 @@ Scaling and PS1 aspect ratio will not apply when
 - On: system default
 - Off: nearest neighbour
 
+#### Enable Full HD
+
+- On: allow framebuffers of sizes 1280x720, 1440x1080, and 1920x1080 to be submitted to the kernel
+- Off: system default
+
 ## Installation
 
 Install under `*KERNEL` of your taiHEN config.

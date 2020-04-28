@@ -81,10 +81,10 @@ int main(int argc, char **argv) { (void)argc; (void)argv;
 			int btns = ~last_ctrl.buttons & ctrl.buttons;
 
 			if (btns & SCE_CTRL_UP) {
-				ui_row = (ui_row - 1 + 3) % 3;
+				ui_row = (ui_row - 1 + 4) % 4;
 
 			} else if (btns & SCE_CTRL_DOWN) {
-				ui_row = (ui_row + 1) % 3;
+				ui_row = (ui_row + 1) % 4;
 
 			} else if ((btns & SCE_CTRL_LEFT) || (btns & SCE_CTRL_RIGHT)) {
 				int inc = (btns & SCE_CTRL_LEFT) ? -1 : 1;
@@ -95,6 +95,8 @@ int main(int argc, char **argv) { (void)argc; (void)argv;
 					config.psone_mode = (config.psone_mode + inc + 3) % 3;
 				} else if (ui_row == 2) {
 					config.bilinear = !config.bilinear;
+				} else if (ui_row == 3) {
+					config.full_hd = !config.full_hd;
 				}
 
 				SharpscaleSetConfig(&config);
@@ -134,6 +136,12 @@ int main(int argc, char **argv) { (void)argc; (void)argv;
 		draw_text(x_pos, y_pos, text_yellow(ui_row == 2), "Bilinear filtering");
 		draw_text(x_pos += 300, y_pos, text_blue(config.bilinear), "On");
 		draw_text(x_pos += 100, y_pos, text_blue(!config.bilinear), "Off");
+
+		x_pos = 50;
+		y_pos = line_height * 7;
+		draw_text(x_pos, y_pos, text_yellow(ui_row == 3), "Enable Full HD");
+		draw_text(x_pos += 300, y_pos, text_blue(config.full_hd), "On");
+		draw_text(x_pos += 100, y_pos, text_blue(!config.full_hd), "Off");
 
 		y_pos = line_height * 13;
 		draw_text_centre(y_pos, TEXT_BLACK, "CBPS Productions");
