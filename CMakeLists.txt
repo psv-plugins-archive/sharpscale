@@ -12,7 +12,7 @@ include("$ENV{DOLCESDK}/share/dolce.cmake" REQUIRED)
 
 project(sharpscale LANGUAGES C)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -O3 -std=c99")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -O3 -std=c99 -Wdouble-promotion -fsingle-precision-constant")
 
 if(LOG_PRINTF)
   set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLOG_PRINTF")
