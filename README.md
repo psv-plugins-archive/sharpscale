@@ -1,8 +1,8 @@
 # Sharpscale
 
-Sharpscale is a PSTV and PS Vita plugin that changes the framebuffer to display scaling method to provide a cleaner and sharper image.
+[Download binary](https://forum.devchroma.nl/index.php/topic,112.0.html) | [Report bugs](https://github.com/cuevavirus/sharpscale/issues) | [Source code](https://git.shotatoshounenwachigau.moe/vita/sharpscale/)
 
-Please see [CBPS forums](https://forum.devchroma.nl/index.php/topic,112.0.html) for download, examples, and detailed usage.
+Sharpscale is a PSTV and PS Vita plugin that changes the way in which the framebuffer is scaled in relation to the display output size to provide a cleaner and sharper image.
 
 ## Usage
 
@@ -73,6 +73,10 @@ FRAGMENT_RING_BUFFER_SIZE    64 KiB
 
 Remove the stencil buffer
 ```
+
+## Contributing
+
+Use [git-format-patch](https://www.git-scm.com/docs/git-format-patch) or [git-request-pull](https://www.git-scm.com/docs/git-request-pull) and email me at <asakurareiko@protonmail.ch>.
 
 ## Credits
 

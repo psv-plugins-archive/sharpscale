@@ -15,11 +15,6 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-// Bounty backers: ScHlAuChii, eleriaqueen, mansjg, TG
-// Video comparisons: Zodasaur
-// SceLowio: xerpi
-// Author: 浅倉麗子
-
 #include <math.h>
 #include <stdarg.h>
 #include <stdio.h>
