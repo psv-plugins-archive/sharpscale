@@ -144,7 +144,7 @@ static int prepare_set_fb_hook(
 			cur_head_idx = -1;
 		}
 	}
-	return TAI_CONTINUE(int, hook_ref[0], head_idx, fb_idx, pitch, width, height,
+	return TAI_NEXT(prepare_set_fb_hook, hook_ref[0], head_idx, fb_idx, pitch, width, height,
 		paddr, pixelformat, flags, sync_mode);
 }
 
@@ -155,7 +155,7 @@ static int prepare_fb_compat_hook(
 	cur_head_idx = *primary_head_idx;
 	cur_fb_w = width;
 	cur_fb_h = height;
-	return TAI_CONTINUE(int, hook_ref[1], plane, pitch, width, height,
+	return TAI_NEXT(prepare_fb_compat_hook, hook_ref[1], plane, pitch, width, height,
 		unk5, unk6, unk7, unk8, paddr, flags);
 }
 
@@ -224,7 +224,7 @@ static int sceIftuSetInputFrameBuffer_hook(int plane, SceIftuPlaneState *state, 
 
 done:
 	bilinear = (!ss_config.bilinear && bilinear == 1) ? 0 : bilinear;
-	return TAI_CONTINUE(int, hook_ref[2], plane, state, bilinear, sync_mode);
+	return TAI_NEXT(sceIftuSetInputFrameBuffer_hook, hook_ref[2], plane, state, bilinear, sync_mode);
 }
 
 int set_full_hd(bool enable) {
