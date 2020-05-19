@@ -62,7 +62,7 @@ static void LOG(const char *fmt, ...) {
 	#endif
 }
 
-#define N_INJECT 5
+#define N_INJECT 8
 static SceUID inject_id[N_INJECT];
 
 #define N_HOOK 3
@@ -244,6 +244,12 @@ int set_full_hd(bool enable) {
 			char cmpw_r3_r3[] = "\xb3\xeb\x03\x0f";
 			GLZ(ret = INJECT_DATA(4, scedisplay_uid, 0, 0x4812, cmpw_r3_r3, 4));
 
+			// Dolce check
+			char movw_r0_1[] = "\x40\xf2\x01\x00";
+			GLZ(ret = INJECT_DATA(5, scedisplay_uid, 0, 0x409E, movw_r0_1, 4));
+			GLZ(ret = INJECT_DATA(6, scedisplay_uid, 0, 0x46CA, movw_r0_1, 4));
+			GLZ(ret = INJECT_DATA(7, scedisplay_uid, 0, 0x47F4, movw_r0_1, 4));
+
 			enabled = 1;
 			ret = 0;
 		}
@@ -253,7 +259,7 @@ int set_full_hd(bool enable) {
 	}
 
 fail:
-	for (int i = 0; i < 5; i++) { UNINJECT(i); }
+	for (int i = 0; i < 8; i++) { UNINJECT(i); }
 	enabled = 0;
 done:
 	return ret;
