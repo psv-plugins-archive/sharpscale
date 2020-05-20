@@ -15,6 +15,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <psp2/appmgr.h>
 #include <psp2/ctrl.h>
 #include <psp2/kernel/clib.h>
 #include <psp2/kernel/sysmem.h>
@@ -40,6 +41,16 @@ static int text_yellow(int a) {
 }
 
 int main(int argc, char **argv) { (void)argc; (void)argv;
+
+	SceAppMgrBudgetInfo info = {0};
+	info.size = sizeof(info);
+	if (0 == sceAppMgrGetBudgetInfo(&info)) {
+		sceClibPrintf("Free LPDDR2: %d KB\n", info.freeLPDDR2 / 1024);
+		sceClibPrintf("Budget LPDDR2: %d KB\n", info.budgetLPDDR2 / 1024);
+	} else {
+		sceClibPrintf("Failed to retrieve application memory budget\n");
+	}
+
 	SceUID memid = sceKernelAllocMemBlock(
 		"SharpscaleConfigMemBlock",
 		SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE,
