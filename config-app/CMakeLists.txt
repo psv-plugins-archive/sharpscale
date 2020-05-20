@@ -21,6 +21,11 @@ add_custom_command(OUTPUT boot_param.bin
 
 set(ELF "${PROJECT_NAME}.elf")
 set(SELF "${PROJECT_NAME}.self")
+set(VPK "${PROJECT_NAME}.vpk")
+
+set(TITLE_NAME "Sharpscale Config Menu")
+set(TITLE_ID "AKRK00005")
+set(TITLE_VER "01.04")
 
 add_executable("${ELF}"
   main.c
@@ -49,10 +54,8 @@ dolce_create_self("${SELF}"
   BOOT_PARAM ${CMAKE_CURRENT_BINARY_DIR}/boot_param.bin
 )
 
-dolce_create_vpk(${PROJECT_NAME}.vpk
-  AKRK00005
-  "${SELF}"
-  NAME "Sharpscale Config Menu"
-  VERSION 01.04
+dolce_create_vpk("${VPK}" "${TITLE_ID}" "${SELF}"
+  NAME "${TITLE_NAME}"
+  VERSION "${TITLE_VER}"
   FILE icon0.png sce_sys/icon0.png
 )

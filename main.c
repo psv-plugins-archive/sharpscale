@@ -19,7 +19,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-#include <psp2kern/display.h>
 #include <psp2kern/io/fcntl.h>
 #include <psp2kern/io/stat.h>
 #include <psp2kern/kernel/modulemgr.h>

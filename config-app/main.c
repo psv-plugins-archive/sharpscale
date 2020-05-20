@@ -15,6 +15,7 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <stdbool.h>
 #include <psp2/appmgr.h>
 #include <psp2/ctrl.h>
 #include <psp2/kernel/clib.h>

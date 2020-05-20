@@ -53,7 +53,6 @@ target_link_libraries("${ELF}"
   gcc
   m
   SceDebugForDriver_stub
-  SceDisplayForDriver_stub
   SceIofilemgrForDriver_stub
   SceSblACMgrForDriver_stub
   SceSysclibForDriver_stub
@@ -65,7 +64,6 @@ target_link_libraries("${ELF}"
 dolce_create_self("${SELF}"
   "${ELF}"
   CONFIG exports.yml
-  UNSAFE
 )
 
 dolce_create_stubs("${PROJECT_NAME}-stubs"

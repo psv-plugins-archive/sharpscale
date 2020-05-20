@@ -23,13 +23,14 @@ if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
   endif()
 endif()
 
-project(sharpscale_scaling_test LANGUAGES C)
 include("$ENV{DOLCESDK}/share/dolce.cmake" REQUIRED)
+
+project(sharpscale_scaling_test LANGUAGES C)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -O3 -std=c99")
 
-set(ELF eboot.elf)
-set(SELF eboot.bin)
+set(ELF "${PROJECT_NAME}.elf")
+set(SELF "${PROJECT_NAME}.self")
 set(VPK "${PROJECT_NAME}.vpk")
 
 set(TITLE_NAME "Sharpscale Scaling Test")
