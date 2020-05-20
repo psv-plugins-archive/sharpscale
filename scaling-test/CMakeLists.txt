@@ -35,7 +35,7 @@ set(VPK "${PROJECT_NAME}.vpk")
 
 set(TITLE_NAME "Sharpscale Scaling Test")
 set(TITLE_ID "AKRK00004")
-set(TITLE_VER "01.03")
+set(TITLE_VER "01.04")
 
 add_executable("${ELF}"
   main.c
@@ -54,4 +54,5 @@ dolce_create_self("${SELF}"
 dolce_create_vpk("${VPK}" "${TITLE_ID}" "${SELF}"
   VERSION "${TITLE_VER}"
   NAME "${TITLE_NAME}"
+  FILE icon0.png sce_sys/icon0.png
 )
