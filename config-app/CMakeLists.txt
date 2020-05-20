@@ -16,7 +16,7 @@
 project(sharpscale_config LANGUAGES C)
 
 add_custom_command(OUTPUT boot_param.bin
-  COMMAND dolce-make-bootparam app_memsize 0x1800 boot_param.bin
+  COMMAND dolce-make-bootparam app_memsize 0x2000 boot_param.bin
 )
 
 set(ELF "${PROJECT_NAME}.elf")
@@ -52,7 +52,7 @@ dolce_create_self("${SELF}"
 dolce_create_vpk(${PROJECT_NAME}.vpk
   AKRK00005
   "${SELF}"
-  NAME "Sharpscale Config"
-  VERSION 01.01
+  NAME "Sharpscale Config Menu"
+  VERSION 01.02
   FILE icon0.png sce_sys/icon0.png
 )
