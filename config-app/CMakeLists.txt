@@ -53,6 +53,6 @@ dolce_create_vpk(${PROJECT_NAME}.vpk
   AKRK00005
   "${SELF}"
   NAME "Sharpscale Config Menu"
-  VERSION 01.02
+  VERSION 01.03
   FILE icon0.png sce_sys/icon0.png
 )
