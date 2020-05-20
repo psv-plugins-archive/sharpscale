@@ -8,6 +8,7 @@ Sharpscale:
     stop: module_stop
   modules:
     Sharpscale:
+      nid: 0xEB132AAF
       syscall: true
       functions:
         - SharpscaleGetConfig
