@@ -29,8 +29,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define RED   0xFF0000FF
 #define BLUE  0xFFFF0000
 
-#define FB_WIDTH 960
-#define FB_HEIGHT 544
+#define FB_WIDTH 1920
+#define FB_HEIGHT 1080
 #define FB_LEN (ALIGN(FB_WIDTH, 64) * FB_HEIGHT * 4)
 
 typedef struct {
@@ -38,12 +38,15 @@ typedef struct {
 	int h;
 } res_t;
 
-#define FB_RES_LEN 4
+#define FB_RES_LEN 7
 static res_t fb_res[FB_RES_LEN] = {
 	{480, 272},
 	{640, 368},
 	{720, 408},
 	{960, 544},
+	{1280, 720},
+	{1440, 1080},
+	{1920, 1080},
 };
 
 static void render(int *fb_base, int width, int pitch, int height) {
