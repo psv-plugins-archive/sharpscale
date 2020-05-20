@@ -217,12 +217,13 @@ static int sceIftuSetInputFrameBuffer_hook(int plane, SceIftuPlaneState *state, 
 			state->src_y = MIN(4 * 0x100 - 1, state->src_y);
 			state->dst_y = 0;
 		}
+
+		bilinear = (!ss_config.bilinear && bilinear == 1) ? 0 : bilinear;
 	}
 
 	cur_head_idx = -1;
 
 done:
-	bilinear = (!ss_config.bilinear && bilinear == 1) ? 0 : bilinear;
 	return TAI_NEXT(sceIftuSetInputFrameBuffer_hook, hook_ref[2], plane, state, bilinear, sync_mode);
 }
 
