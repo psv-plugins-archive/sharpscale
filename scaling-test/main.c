@@ -15,12 +15,17 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <stdlib.h>
 #include <string.h>
 #include <psp2/ctrl.h>
 #include <psp2/display.h>
+#include <psp2/io/fcntl.h>
 #include <psp2/kernel/clib.h>
 #include <psp2/kernel/processmgr.h>
 #include <psp2/kernel/sysmem.h>
+#include <fnblit.h>
+
+#define SFN_FILE_BUF_LEN 0x100000
 
 #define ALIGN(x, a) (((x) + ((a) - 1)) & ~((a) - 1))
 
@@ -92,6 +97,20 @@ static void render(int *fb_base, int width, int pitch, int height) {
 }
 
 int main() {
+	void *sfn_file = malloc(SFN_FILE_BUF_LEN);
+	if (!sfn_file) { goto done; }
+
+	SceUID sfn_file_fd = sceIoOpen("app0:font.sfn", SCE_O_RDONLY, 0);
+	if (sfn_file_fd < 0) { goto done; }
+
+	int bytes_read = sceIoRead(sfn_file_fd, sfn_file, SFN_FILE_BUF_LEN);
+	sceIoClose(sfn_file_fd);
+	if (bytes_read < 0 || bytes_read == SFN_FILE_BUF_LEN) { goto done; }
+
+	fnblit_set_font(sfn_file);
+	fnblit_set_fg(WHITE);
+	fnblit_set_bg(BLACK);
+
 	SceUID mem_id = sceKernelAllocMemBlock(
 		"ScalingTestMemblock",
 		SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW,
@@ -110,6 +129,12 @@ int main() {
 		pitch = ALIGN(width, 64);
 		height = fb_res[idx].h;
 		render(fb_base, width, pitch, height);
+
+		fnblit_set_fb(fb_base, pitch, width, height);
+		fnblit_printf(10, 10, "%dx%d", width, height);
+		fnblit_printf(10, height - 42, "Sharpscale Scaling Test");
+		fnblit_printf(10, height - 26, "Copyright 2020 浅倉麗子");
+
 		sceClibPrintf("Selected resolution %dx%d\n", width, height);
 	}
 

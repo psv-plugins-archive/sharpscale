@@ -29,19 +29,40 @@ project(sharpscale_scaling_test LANGUAGES C)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -O3 -std=c99")
 
+set(FONT_FILE "unifont.bdf.gz")
+set(SFN_FILE "font.sfn")
+
+file(DOWNLOAD
+  "https://ftp.gnu.org/gnu/unifont/unifont-13.0.02/unifont-13.0.02.bdf.gz"
+  "${FONT_FILE}"
+  EXPECTED_HASH SHA256=ee02036aec9350dc35ebaaa205c43f9f9ad14efc56d63c12b177ac4fd424e94f
+)
+
+add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${SFN_FILE}"
+  COMMAND bit2sfn
+    -r "Basic Latin"        "${FONT_FILE}"
+    -r "Latin-1 Supplement" "${FONT_FILE}"
+    -r 0x6D45 0x6D46        "${FONT_FILE}"
+    -r 0x5009 0x500A        "${FONT_FILE}"
+    -r 0x9E97 0x9E98        "${FONT_FILE}"
+    -r 0x5B50 0x5B51        "${FONT_FILE}"
+    "${CMAKE_CURRENT_BINARY_DIR}/${SFN_FILE}"
+)
+
 set(ELF "${PROJECT_NAME}.elf")
 set(SELF "${PROJECT_NAME}.self")
 set(VPK "${PROJECT_NAME}.vpk")
 
 set(TITLE_NAME "Sharpscale Scaling Test")
 set(TITLE_ID "AKRK00004")
-set(TITLE_VER "01.04")
+set(TITLE_VER "01.05")
 
 add_executable("${ELF}"
   main.c
 )
 
 target_link_libraries("${ELF}"
+  fnblit
   SceCtrl_stub
   SceDisplay_stub
   SceLibKernel_stub
@@ -55,4 +76,5 @@ dolce_create_vpk("${VPK}" "${TITLE_ID}" "${SELF}"
   VERSION "${TITLE_VER}"
   NAME "${TITLE_NAME}"
   FILE icon0.png sce_sys/icon0.png
+  FILE "${CMAKE_CURRENT_BINARY_DIR}/${SFN_FILE}" "${SFN_FILE}"
 )
