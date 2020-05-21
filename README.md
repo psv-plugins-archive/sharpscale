@@ -54,17 +54,35 @@ ur0:tai/sharpscale.skprx
 
 ## Configuration
 
-Use the provided configuration app to change settings instantly without needing to close the foreground application or needing to reboot.
+Use the provided configuration app to change settings instantly without needing to close the foreground application or needing to reboot. If the app crashes on startup, then disable user plugins for this app in your taiHEN config.
 
 ## Scaling test
 
 The scaling test program shows horizontal and vertical lines 1 pixel wide alternating between black and white. Use the left and right buttons to cycle between framebuffer resolutions.
 
+Available resolutions:
+
+- 480×272
+- 640×368
+- 720×408
+- 960×544
+- 1280×720
+- 1440×1080
+- 1920×1080
+
 **Warning:** Do not use when HDMI is set to interlaced mode.
 
 ## Building
 
-Use [DolceSDK](https://forum.devchroma.nl/index.php/topic,129.0.html) and [libvita2d_sys](https://github.com/GrapheneCt/libvita2d_sys) to build. The following modifications to libvita2d_sys are required to reduce memory usage:
+Dependencies:
+
+- [DolceSDK](https://forum.devchroma.nl/index.php/topic,129.0.html)
+- [libvita2d_sys](https://github.com/GrapheneCt/libvita2d_sys)
+- [fnblit and bit2sfn](https://git.shotatoshounenwachigau.moe/vita/fnblit)
+- [GNU Unifont](http://unifoundry.com/unifont/index.html)
+- [taiHEN](https://git.shotatoshounenwachigau.moe/vita/taihen/)
+
+The following modifications to libvita2d_sys are required to reduce memory usage:
 
 ```
 DEFAULT_TEMP_POOL_SIZE      128 KiB
@@ -84,5 +102,9 @@ Use [git-format-patch](https://www.git-scm.com/docs/git-format-patch) or [git-re
 
 - Bounty backers: [ScHlAuChii, eleriaqueen, mansjg, TG](https://www.bountysource.com/issues/78540965-native-resolution-output-for-pstv)
 - Video comparisons: Zodasaur
-- SceLowio: xerpi
+- SceLowio and SceDisplay RE: xerpi
 - Author: 浅倉麗子
+
+## See more
+
+CBPS ([forum](https://forum.devchroma.nl/index.php), [discord](https://discordapp.com/invite/2ccAkg3))

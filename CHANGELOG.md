@@ -1,5 +1,12 @@
 ### Changelog
 
+#### v1.4.0
+
+- Allow enable HD framebuffer sizes on the Vita
+- Add HD resolutions to scaling test
+- Fixed crashes in config app
+- Bilinear filtering reverts to system default whenever scaling is not applied
+
 #### v1.3.0
 
 - Configurable option to enable HD framebuffer sizes for the PSTV

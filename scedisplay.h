@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #ifndef SCEDISPLAY_H
 #define SCEDISPLAY_H
 
-// From https://github.com/vita-nuova/bounties/issues/7#issuecomment-520154064
+// From https://wiki.henkaku.xyz/vita/SceDisplay
 
 typedef struct {
 	SceUID pid;
