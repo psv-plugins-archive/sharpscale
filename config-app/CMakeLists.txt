@@ -31,6 +31,12 @@ add_executable("${ELF}"
   main.c
 )
 
+target_compile_options("${ELF}"
+  PRIVATE -O3 -std=c99
+  PRIVATE -Wall -Wextra -Wdouble-promotion -Wshadow -Wundef
+  PRIVATE -fsingle-precision-constant -fno-common
+)
+
 target_include_directories("${ELF}"
   PRIVATE "${CMAKE_SOURCE_DIR}"
 )

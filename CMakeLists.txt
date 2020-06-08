@@ -27,16 +27,6 @@ include("$ENV{DOLCESDK}/share/dolce.cmake" REQUIRED)
 
 project(sharpscale LANGUAGES C)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -O3 -std=c99 -Wdouble-promotion -fsingle-precision-constant")
-
-if(LOG_PRINTF)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLOG_PRINTF")
-endif()
-
-if(LOG_FILE)
-  set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DLOG_FILE")
-endif()
-
 set(ELF "${PROJECT_NAME}.elf")
 set(SELF "${PROJECT_NAME}.skprx")
 
@@ -44,6 +34,20 @@ add_executable("${ELF}"
   main.c
   config.c
 )
+
+target_compile_options("${ELF}"
+  PRIVATE -O3 -std=c99
+  PRIVATE -Wall -Wextra -Wdouble-promotion -Wshadow -Wundef
+  PRIVATE -fsingle-precision-constant -fno-common
+)
+
+if(LOG_PRINTF)
+  target_compile_definitions("${ELF}" PRIVATE LOG_PRINTF)
+endif()
+
+if(LOG_FILE)
+  target_compile_definitions("${ELF}" PRIVATE LOG_FILE)
+endif()
 
 target_link_options("${ELF}"
   PRIVATE -nostdlib

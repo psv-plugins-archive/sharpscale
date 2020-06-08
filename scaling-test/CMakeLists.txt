@@ -27,8 +27,7 @@ include("$ENV{DOLCESDK}/share/dolce.cmake" REQUIRED)
 
 project(sharpscale_scaling_test LANGUAGES C)
 
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -Wall -Wextra -O3 -std=c99")
-
+# build font
 set(FONT_FILE "unifont.bdf.gz")
 set(SFN_FILE "font.sfn")
 
@@ -49,6 +48,7 @@ add_custom_command(OUTPUT "${CMAKE_CURRENT_BINARY_DIR}/${SFN_FILE}"
     "${CMAKE_CURRENT_BINARY_DIR}/${SFN_FILE}"
 )
 
+# build application
 set(ELF "${PROJECT_NAME}.elf")
 set(SELF "${PROJECT_NAME}.self")
 set(VPK "${PROJECT_NAME}.vpk")
@@ -59,6 +59,12 @@ set(TITLE_VER "01.05")
 
 add_executable("${ELF}"
   main.c
+)
+
+target_compile_options("${ELF}"
+  PRIVATE -O3 -std=c99
+  PRIVATE -Wall -Wextra -Wdouble-promotion -Wshadow -Wundef
+  PRIVATE -fsingle-precision-constant -fno-common
 )
 
 target_link_libraries("${ELF}"
