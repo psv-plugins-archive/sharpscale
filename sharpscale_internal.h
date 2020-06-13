@@ -20,6 +20,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <stdbool.h>
 
-int set_full_hd(bool enable);
+int set_unlock_fb_size(bool enable);
 
 #endif

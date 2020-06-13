@@ -1,5 +1,9 @@
 ### Changelog
 
+#### v1.5.0
+
+- Name changes to configuration options
+
 #### v1.4.0
 
 - Allow enable HD framebuffer sizes on the Vita

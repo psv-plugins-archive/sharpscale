@@ -30,16 +30,16 @@ SharpscaleConfig ss_config;
 
 static bool is_config_valid(SharpscaleConfig *config) {
 	return config->mode < SHARPSCALE_MODE_INVALID
-		&& config->psone_mode < SHARPSCALE_PSONE_MODE_INVALID
+		&& config->psone_ar < SHARPSCALE_PSONE_AR_INVALID
 		&& (config->bilinear == true || config->bilinear == false)
-		&& (config->full_hd == true || config->full_hd == false);
+		&& (config->unlock_fb_size == true || config->unlock_fb_size == false);
 }
 
 int reset_config(SharpscaleConfig *config) {
 	config->mode = SHARPSCALE_MODE_INTEGER;
-	config->psone_mode = SHARPSCALE_PSONE_MODE_4_3;
+	config->psone_ar = SHARPSCALE_PSONE_AR_4_3;
 	config->bilinear = false;
-	config->full_hd = false;
+	config->unlock_fb_size = false;
 	return 0;
 }
 
@@ -90,7 +90,7 @@ int SharpscaleSetConfig(SharpscaleConfig *config) {
 	int ret = ksceKernelMemcpyUserToKernel(&kconfig, (uintptr_t)config, sizeof(kconfig));
 	if (ret < 0) { goto fail; }
 	if (!is_config_valid(&kconfig)) { goto fail; }
-	if (set_full_hd(kconfig.full_hd) < 0) { goto fail; }
+	if (set_unlock_fb_size(kconfig.unlock_fb_size) < 0) { goto fail; }
 	memcpy(&ss_config, &kconfig, sizeof(ss_config));
 	return write_config(&ss_config);
 

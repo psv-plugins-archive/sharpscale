@@ -107,13 +107,13 @@ int main(int argc, char **argv) { (void)argc; (void)argv;
 				int inc = (btns & SCE_CTRL_LEFT) ? -1 : 1;
 
 				if (ui_row == 0) {
-					config.mode = (config.mode + inc + 4) % 4;
+					config.mode = (config.mode + inc + SHARPSCALE_MODE_INVALID) % SHARPSCALE_MODE_INVALID;
 				} else if (ui_row == 1) {
-					config.psone_mode = (config.psone_mode + inc + 3) % 3;
+					config.psone_ar = (config.psone_ar + inc + SHARPSCALE_PSONE_AR_INVALID) % SHARPSCALE_PSONE_AR_INVALID;
 				} else if (ui_row == 2) {
 					config.bilinear = !config.bilinear;
 				} else if (ui_row == 3) {
-					config.full_hd = !config.full_hd;
+					config.unlock_fb_size = !config.unlock_fb_size;
 				}
 
 				SharpscaleSetConfig(&config);
@@ -144,22 +144,22 @@ int main(int argc, char **argv) { (void)argc; (void)argv;
 
 			x_pos = 50;
 			y_pos = line_height * 5;
-			draw_text(x_pos, y_pos, text_yellow(ui_row == 1), "PS1 aspect ratio mode");
-			draw_text(x_pos += 300, y_pos, text_blue(config.psone_mode == SHARPSCALE_PSONE_MODE_PIXEL), "Pixel");
-			draw_text(x_pos += 100, y_pos, text_blue(config.psone_mode == SHARPSCALE_PSONE_MODE_4_3), "4:3");
-			draw_text(x_pos += 100, y_pos, text_blue(config.psone_mode == SHARPSCALE_PSONE_MODE_16_9), "16:9");
+			draw_text(x_pos, y_pos, text_yellow(ui_row == 1), "PS1 aspect ratio");
+			draw_text(x_pos += 300, y_pos, text_blue(config.psone_ar == SHARPSCALE_PSONE_AR_PIXEL), "Pixel");
+			draw_text(x_pos += 100, y_pos, text_blue(config.psone_ar == SHARPSCALE_PSONE_AR_4_3), "4:3");
+			draw_text(x_pos += 100, y_pos, text_blue(config.psone_ar == SHARPSCALE_PSONE_AR_16_9), "16:9");
 
 			x_pos = 50;
 			y_pos = line_height * 6;
-			draw_text(x_pos, y_pos, text_yellow(ui_row == 2), "Bilinear filtering");
-			draw_text(x_pos += 300, y_pos, text_blue(config.bilinear), "On");
-			draw_text(x_pos += 100, y_pos, text_blue(!config.bilinear), "Off");
+			draw_text(x_pos, y_pos, text_yellow(ui_row == 2), "Scaling algorithm");
+			draw_text(x_pos += 300, y_pos, text_blue(!config.bilinear), "Point");
+			draw_text(x_pos += 100, y_pos, text_blue(config.bilinear), "Bilinear");
 
 			x_pos = 50;
 			y_pos = line_height * 7;
-			draw_text(x_pos, y_pos, text_yellow(ui_row == 3), "Enable Full HD");
-			draw_text(x_pos += 300, y_pos, text_blue(config.full_hd), "On");
-			draw_text(x_pos += 100, y_pos, text_blue(!config.full_hd), "Off");
+			draw_text(x_pos, y_pos, text_yellow(ui_row == 3), "Unlock framebuffer size");
+			draw_text(x_pos += 300, y_pos, text_blue(config.unlock_fb_size), "On");
+			draw_text(x_pos += 100, y_pos, text_blue(!config.unlock_fb_size), "Off");
 
 		} else {
 			y_pos = line_height * 4;

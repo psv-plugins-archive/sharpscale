@@ -171,15 +171,15 @@ static int sceIftuSetInputFrameBuffer_hook(int plane, SceIftuPlaneState *state, 
 
 	float ar_scale = 1.0;
 
-	if (ss_config.psone_mode != SHARPSCALE_PSONE_MODE_PIXEL
+	if (ss_config.psone_ar != SHARPSCALE_PSONE_AR_PIXEL
 			&& (fb_w < 960 && fb_h < 544)
 			&& !(fb_w == 480 && fb_h == 272)
 			&& ksceSblACMgrIsPspEmu(SCE_KERNEL_PROCESS_ID_SELF)) {
 
-		if (ss_config.psone_mode == SHARPSCALE_PSONE_MODE_4_3) {
+		if (ss_config.psone_ar == SHARPSCALE_PSONE_AR_4_3) {
 			ar_scale = (float)(4 * fb_h) / (float)(3 * fb_w);
 			fb_w = lroundf((float)(4 * fb_h) / 3.0);
-		} else if (ss_config.psone_mode == SHARPSCALE_PSONE_MODE_16_9) {
+		} else if (ss_config.psone_ar == SHARPSCALE_PSONE_AR_16_9) {
 			ar_scale = (float)(16 * fb_h) / (float)(9 * fb_w);
 			fb_w = lroundf((float)(16 * fb_h) / 9.0);
 		}
@@ -227,7 +227,7 @@ done:
 	return TAI_NEXT(sceIftuSetInputFrameBuffer_hook, hook_ref[2], plane, state, bilinear, sync_mode);
 }
 
-int set_full_hd(bool enable) {
+int set_unlock_fb_size(bool enable) {
 	static int enabled = 0;
 	int ret = 0;
 
@@ -296,7 +296,7 @@ int module_start(SceSize argc, const void *argv) { (void)argc; (void)argv;
 	GLZ(HOOK_OFFSET(1, scedisplay_uid, 0x004, prepare_fb_compat));
 	GLZ(HOOK_IMPORT(2, "SceDisplay", 0xCAFCFE50, 0x7CE0C4DA, sceIftuSetInputFrameBuffer));
 
-	GLZ(set_full_hd(ss_config.full_hd));
+	GLZ(set_unlock_fb_size(ss_config.unlock_fb_size));
 
 	return SCE_KERNEL_START_SUCCESS;
 

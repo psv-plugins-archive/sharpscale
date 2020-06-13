@@ -17,9 +17,9 @@ Sharpscale can be configured to different scaling methods.
 
 In integer and real modes, a few lines may be cropped from the top and bottom to preserve aspect ratio of the framebuffer.
 
-#### PS1 aspect ratio modes
+#### PS1 aspect ratio
 
-PS1 aspect ratio modes only take effect in integer, real, and fitted scaling modes and is applied before scaling.
+PS1 aspect ratio can be forced in integer, real, and fitted scaling modes and is applied before scaling.
 
 - Pixel: aspect ratio of the framebuffer
 - 4∶3: aspect ratio is forced to 4∶3
@@ -29,16 +29,16 @@ Scaling and PS1 aspect ratio will not apply when
 
 - in integer and real modes, if the framebuffer is already larger than the display
 - in fitted mode, if the framebuffer is too big to be scaled
-- in 4∶3 and 16∶9 modes, aspect ratio is too different to be forced
+- aspect ratio is too different to be forced to 4∶3 or 16∶9
 
-#### Bilinear filtering
+#### Scaling algorithm
 
-- On: system default
-- Off: nearest neighbour
+- Point: nearest neighbour
+- Bilinear: bilinear interpolation (system default)
 
-Whenever scaling mode is original, or otherwise not applied, system default bilinear filtering is applied.
+Whenever scaling mode is original, or otherwise not applied, bilinear interpolation is used.
 
-#### Enable Full HD
+#### Unlock framebuffer size
 
 - On: allow framebuffers of sizes 1280x720, 1440x1080, and 1920x1080 to be submitted to the kernel
 - Off: system default

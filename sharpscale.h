@@ -28,18 +28,18 @@ typedef enum SharpscaleMode {
 	SHARPSCALE_MODE_INVALID,
 } SharpscaleMode;
 
-typedef enum SharpscalePSOneMode {
-	SHARPSCALE_PSONE_MODE_PIXEL,
-	SHARPSCALE_PSONE_MODE_4_3,
-	SHARPSCALE_PSONE_MODE_16_9,
-	SHARPSCALE_PSONE_MODE_INVALID,
-} SharpscalePSOneMode;
+typedef enum SharpscalePSOneAR {
+	SHARPSCALE_PSONE_AR_PIXEL,
+	SHARPSCALE_PSONE_AR_4_3,
+	SHARPSCALE_PSONE_AR_16_9,
+	SHARPSCALE_PSONE_AR_INVALID,
+} SharpscalePSOneAR;
 
 typedef struct SharpscaleConfig {
 	SharpscaleMode mode;
-	SharpscalePSOneMode psone_mode;
+	SharpscalePSOneAR psone_ar;
 	bool bilinear;
-	bool full_hd;
+	bool unlock_fb_size;
 } SharpscaleConfig;
 
 int SharpscaleGetConfig(SharpscaleConfig *config);
