@@ -25,7 +25,7 @@ set(VPK "${PROJECT_NAME}.vpk")
 
 set(TITLE_NAME "Sharpscale Config Menu")
 set(TITLE_ID "AKRK00005")
-set(TITLE_VER "01.05")
+set(TITLE_VER "01.06")
 
 add_executable("${ELF}"
   main.c

@@ -134,6 +134,8 @@ int main(int argc, char **argv) { (void)argc; (void)argv;
 		vita2d_draw_line(50.0f, line_height * 2.75f, 910.0f, line_height * 2.75f, TEXT_BLACK);
 
 		if (kmod_linked) {
+			SharpscaleGetConfig(&config);
+
 			x_pos = 50;
 			y_pos = line_height * 4;
 			draw_text(x_pos, y_pos, text_yellow(ui_row == 0), "Scaling mode");
