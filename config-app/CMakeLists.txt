@@ -25,7 +25,7 @@ set(VPK "${PROJECT_NAME}.vpk")
 
 set(TITLE_NAME "Sharpscale Config Menu")
 set(TITLE_ID "AKRK00005")
-set(TITLE_VER "01.06")
+set(TITLE_VER "01.07")
 
 add_executable("${ELF}"
   main.c
@@ -64,4 +64,5 @@ dolce_create_vpk("${VPK}" "${TITLE_ID}" "${SELF}"
   NAME "${TITLE_NAME}"
   VERSION "${TITLE_VER}"
   FILE icon0.png sce_sys/icon0.png
+  FILE manual.png sce_sys/manual/001.png
 )

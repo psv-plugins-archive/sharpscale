@@ -3,6 +3,7 @@
 #### v1.5.0
 
 - Name changes to configuration options
+- Configuration app has a manual that can be opened from the LiveArea
 
 #### v1.4.0
 
