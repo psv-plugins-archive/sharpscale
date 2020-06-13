@@ -56,6 +56,8 @@ ur0:tai/sharpscale.skprx
 
 Use the provided configuration app to change settings instantly without needing to close the foreground application or needing to reboot. If the app crashes on startup, then disable user plugins for this app in your taiHEN config.
 
+![preview-config-app](https://git.shotatoshounenwachigau.moe/vita/sharpscale/plain/preview-config-app.png?h=assets)
+
 ## Scaling test
 
 The scaling test program shows horizontal and vertical lines 1 pixel wide alternating between black and white. Use the left and right buttons to cycle between framebuffer resolutions.
