@@ -61,7 +61,7 @@ static void LOG(const char *fmt, ...) {
 	#endif
 }
 
-#define N_INJECT 8
+#define N_INJECT 9
 static SceUID inject_id[N_INJECT];
 
 #define N_HOOK 3
@@ -250,6 +250,10 @@ int set_unlock_fb_size(bool enable) {
 			GLZ(ret = INJECT_DATA(6, scedisplay_uid, 0, 0x46CA, movw_r0_1, 4));
 			GLZ(ret = INJECT_DATA(7, scedisplay_uid, 0, 0x47F4, movw_r0_1, 4));
 
+			// dimension check
+			char b_0x20[] = "\x0e\xe0";
+			GLZ(ret = INJECT_DATA(8, scedisplay_uid, 0, 0x42BC, b_0x20, 2));
+
 			enabled = 1;
 			ret = 0;
 		}
@@ -259,7 +263,7 @@ int set_unlock_fb_size(bool enable) {
 	}
 
 fail:
-	for (int i = 0; i < 8; i++) { UNINJECT(i); }
+	for (int i = 0; i < 9; i++) { UNINJECT(i); }
 	enabled = 0;
 done:
 	return ret;
