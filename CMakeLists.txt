@@ -38,6 +38,10 @@ if(LOG_FILE)
   add_compile_definitions(LOG_FILE)
 endif()
 
+add_link_options(
+  -nostdlib
+)
+
 # Build self
 
 set(ELF "sharpscale.elf")
@@ -48,10 +52,6 @@ set(SELF_STUB "sharpscale-stub")
 add_executable("${ELF}"
   main.c
   config.c
-)
-
-target_link_options("${ELF}"
-  PRIVATE -nostdlib
 )
 
 target_link_libraries("${ELF}"

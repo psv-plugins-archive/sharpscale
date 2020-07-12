@@ -19,12 +19,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <psp2/appmgr.h>
 #include <psp2/ctrl.h>
 #include <psp2/kernel/clib.h>
+#include <psp2/kernel/processmgr.h>
 #include <psp2/kernel/sysmem.h>
 #include <vita2d_sys.h>
 #include "sharpscale.h"
 
-// do not need newlib heap
-int _newlib_heap_size_user = 4 * 1024;
+void *memset(void *dest, int ch, size_t count) {
+	return sceClibMemset(dest, ch, count);
+}
+
 #define CLIB_HEAP_SIZE 256 * 1024
 
 #define BG_COLOUR     0xFFDFDFDF
@@ -41,7 +44,7 @@ static int text_yellow(int a) {
 	return a ? TEXT_YELLOW : TEXT_BLACK;
 }
 
-int main(int argc, char **argv) { (void)argc; (void)argv;
+void _start(int args, void *argp) { (void)args; (void)argp;
 
 	SceAppMgrBudgetInfo info = {0};
 	info.size = sizeof(info);
@@ -57,6 +60,7 @@ int main(int argc, char **argv) { (void)argc; (void)argv;
 		SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE,
 		CLIB_HEAP_SIZE,
 		NULL);
+	if (memid < 0) { goto done; }
 	void *membase;
 	sceKernelGetMemBlockBase(memid, &membase);
 
@@ -181,5 +185,6 @@ int main(int argc, char **argv) { (void)argc; (void)argv;
 		vita2d_end_shfb();
 	}
 
-	return 0;
+done:
+	sceKernelExitProcess(0);
 }

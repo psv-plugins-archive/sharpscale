@@ -25,7 +25,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <psp2/kernel/sysmem.h>
 #include <fnblit.h>
 
-#define SFN_FILE_BUF_LEN 0x100000
+#define SFN_FILE_BUF_LEN SCE_KERNEL_1MiB
 
 #define ALIGN(x, a) (((x) + ((a) - 1)) & ~((a) - 1))
 
@@ -96,9 +96,16 @@ static void render(int *fb_base, int width, int pitch, int height) {
 	}
 }
 
-int main() {
-	void *sfn_file = malloc(SFN_FILE_BUF_LEN);
-	if (!sfn_file) { goto done; }
+void _start(int args, void *argp) { (void)args; (void)argp;
+
+	SceUID font_mem_id = sceKernelAllocMemBlock(
+		"FontFileMem",
+		SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE,
+		ALIGN(SFN_FILE_BUF_LEN, SCE_KERNEL_4KiB),
+		NULL);
+	if (font_mem_id < 0) { goto done; }
+	void *sfn_file;
+	sceKernelGetMemBlockBase(font_mem_id, &sfn_file);
 
 	SceUID sfn_file_fd = sceIoOpen("app0:font.sfn", SCE_O_RDONLY, 0);
 	if (sfn_file_fd < 0) { goto done; }
@@ -111,14 +118,14 @@ int main() {
 	fnblit_set_fg(WHITE);
 	fnblit_set_bg(BLACK);
 
-	SceUID mem_id = sceKernelAllocMemBlock(
-		"ScalingTestMemblock",
+	SceUID fb_mem_id = sceKernelAllocMemBlock(
+		"FramebufferMem",
 		SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW,
-		ALIGN(FB_LEN, 0x40000),
+		ALIGN(FB_LEN, SCE_KERNEL_256KiB),
 		NULL);
-	if (mem_id < 0) { goto done; }
+	if (fb_mem_id < 0) { goto done; }
 	int *fb_base;
-	if (sceKernelGetMemBlockBase(mem_id, (void**)&fb_base) < 0) { goto free_mem; }
+	sceKernelGetMemBlockBase(fb_mem_id, (void**)&fb_base);
 
 	int width = 0;
 	int pitch = 0;
@@ -142,11 +149,11 @@ int main() {
 	select_res(res_idx);
 
 	SceCtrlData last_ctrl;
-	memset(&last_ctrl, 0x00, sizeof(last_ctrl));
+	sceClibMemset(&last_ctrl, 0x00, sizeof(last_ctrl));
 
 	for (;;) {
 		SceCtrlData ctrl;
-		memset(&ctrl, 0x00, sizeof(ctrl));
+		sceClibMemset(&ctrl, 0x00, sizeof(ctrl));
 
 		if (sceCtrlReadBufferPositive(0, &ctrl, 1) == 1) {
 			int btns = ~last_ctrl.buttons & ctrl.buttons;
@@ -174,8 +181,6 @@ int main() {
 		sceDisplayWaitVblankStartMulti(2);
 	}
 
-free_mem:
-	sceKernelFreeMemBlock(mem_id);
 done:
-	return sceKernelExitProcess(0);
+	sceKernelExitProcess(0);
 }
