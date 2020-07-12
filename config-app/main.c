@@ -65,7 +65,13 @@ void _start(int args, void *argp) { (void)args; (void)argp;
 	sceKernelGetMemBlockBase(memid, &membase);
 
 	vita2d_clib_pass_mspace(sceClibMspaceCreate(membase, CLIB_HEAP_SIZE));
-	vita2d_init();
+	vita2d_init_with_msaa_and_memsize(
+		SCE_KERNEL_128KiB,  // temp pool size
+		SCE_KERNEL_32KiB,   // vdm ring buffer size
+		SCE_KERNEL_128KiB,  // vertex ring buffer size
+		SCE_KERNEL_64KiB,   // fragment ring buffer size
+		SCE_GXM_DEFAULT_FRAGMENT_USSE_RING_BUFFER_SIZE,
+		SCE_GXM_MULTISAMPLE_NONE);
 	vita2d_set_vblank_wait(0);
 	vita2d_set_clear_color(BG_COLOUR);
 

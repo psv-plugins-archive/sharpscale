@@ -57,7 +57,7 @@ dolce_create_self("${SELF}"
 set(VPK "sharpscale-config.vpk")
 set(TITLE_NAME "Sharpscale Configuration Menu")
 set(TITLE_ID "AKRK00005")
-set(TITLE_VER "01.08")
+set(TITLE_VER "01.09")
 
 dolce_create_vpk("${VPK}" "${TITLE_ID}" "${SELF}"
   NAME "${TITLE_NAME}"
