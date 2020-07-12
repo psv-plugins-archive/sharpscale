@@ -40,8 +40,7 @@ typedef struct {
 	int unk14;
 	int pulse_event_value;
 	int dsi_bus;
-	int plane_idx0;
-	int plane_idx1;
+	int plane[2];
 	int vic;
 	int head_w;
 	int head_h;

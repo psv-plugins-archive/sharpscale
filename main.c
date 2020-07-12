@@ -129,6 +129,12 @@ static int *primary_head_idx = 0;
 static int cur_head_idx = -1;
 static int cur_fb_w = 0;
 static int cur_fb_h = 0;
+static int cur_app_fb_scaled_w = 0;
+static int cur_app_fb_scaled_h = 0;
+static int cur_app_fb_src_x = 0;
+static int cur_app_fb_src_y = 0;
+static int cur_app_fb_dst_x = 0;
+static int cur_app_fb_dst_y = 0;
 
 // mutex at SceDisplay_8100B1E4 is locked
 static int prepare_set_fb_hook(
@@ -161,6 +167,17 @@ static int prepare_fb_compat_hook(
 // if mutex at SceDisplay_8100B1E4 is not locked, then state points to a zero struct
 static int sceIftuSetInputFrameBuffer_hook(int plane, SceIftuPlaneState *state, int bilinear, int sync_mode) {
 	if ((cur_head_idx & ~1) != 0 || !state || !state->fb.width || !state->fb.height) {
+		goto done;
+	}
+
+	if (plane == head_data[cur_head_idx].plane[1] && head_data[cur_head_idx].fb[0].paddr
+			&& cur_app_fb_scaled_w && cur_app_fb_scaled_h) {
+		state->src_w = lroundf(65536.0 * ((float)cur_fb_w / (float)cur_app_fb_scaled_w));
+		state->src_h = lroundf(65536.0 * ((float)cur_fb_h / (float)cur_app_fb_scaled_h));
+		state->src_x = cur_app_fb_src_x;
+		state->src_y = cur_app_fb_src_y;
+		state->dst_x = cur_app_fb_dst_x;
+		state->dst_y = cur_app_fb_dst_y;
 		goto done;
 	}
 
@@ -219,6 +236,18 @@ static int sceIftuSetInputFrameBuffer_hook(int plane, SceIftuPlaneState *state, 
 		}
 
 		bilinear = (!ss_config.bilinear && bilinear == 1) ? 0 : bilinear;
+	} else {
+		fb_w = lroundf((float)cur_fb_w / ((float)state->src_w / 65536.0));
+		fb_h = lroundf((float)cur_fb_h / ((float)state->src_h / 65536.0));
+	}
+
+	if (plane == head_data[cur_head_idx].plane[0]) {
+		cur_app_fb_scaled_w = fb_w;
+		cur_app_fb_scaled_h = fb_h;
+		cur_app_fb_src_x = state->src_x;
+		cur_app_fb_src_y = state->src_y;
+		cur_app_fb_dst_x = state->dst_x;
+		cur_app_fb_dst_y = state->dst_y;
 	}
 
 	cur_head_idx = -1;
