@@ -15,46 +15,46 @@
 
 cmake_minimum_required(VERSION 3.13)
 
-if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-  if(DEFINED ENV{DOLCESDK})
-    set(CMAKE_TOOLCHAIN_FILE "$ENV{DOLCESDK}/share/dolce.toolchain.cmake" CACHE PATH "toolchain file")
-  else()
-    message(FATAL_ERROR "Please define DOLCESDK to point to your SDK path!")
-  endif()
+if(DEFINED ENV{DOLCESDK})
+  set(CMAKE_TOOLCHAIN_FILE "$ENV{DOLCESDK}/share/dolce.toolchain.cmake")
+  include("$ENV{DOLCESDK}/share/dolce.cmake" REQUIRED)
+else()
+  message(FATAL_ERROR "Please define DOLCESDK to point to your SDK path!")
 endif()
-
-include("$ENV{DOLCESDK}/share/dolce.cmake" REQUIRED)
 
 project(sharpscale LANGUAGES C)
 
-set(ELF "${PROJECT_NAME}.elf")
-set(SELF "${PROJECT_NAME}.skprx")
+add_compile_options(
+  -O3 -std=c99
+  -Wall -Wextra -Wdouble-promotion -Wshadow -Wundef
+  -fsingle-precision-constant -fno-common
+)
+
+if(LOG_PRINTF)
+  add_compile_definitions(LOG_PRINTF)
+endif()
+
+if(LOG_FILE)
+  add_compile_definitions(LOG_FILE)
+endif()
+
+# Build self
+
+set(ELF "sharpscale.elf")
+set(SELF "sharpscale.skprx")
+set(VELF_CFG "exports.yml")
+set(SELF_STUB "sharpscale-stub")
 
 add_executable("${ELF}"
   main.c
   config.c
 )
 
-target_compile_options("${ELF}"
-  PRIVATE -O3 -std=c99
-  PRIVATE -Wall -Wextra -Wdouble-promotion -Wshadow -Wundef
-  PRIVATE -fsingle-precision-constant -fno-common
-)
-
-if(LOG_PRINTF)
-  target_compile_definitions("${ELF}" PRIVATE LOG_PRINTF)
-endif()
-
-if(LOG_FILE)
-  target_compile_definitions("${ELF}" PRIVATE LOG_FILE)
-endif()
-
 target_link_options("${ELF}"
   PRIVATE -nostdlib
 )
 
 target_link_libraries("${ELF}"
-  gcc
   m
   SceDebugForDriver_stub
   SceIofilemgrForDriver_stub
@@ -67,14 +67,13 @@ target_link_libraries("${ELF}"
 
 dolce_create_self("${SELF}"
   "${ELF}"
-  CONFIG exports.yml
+  CONFIG "${VELF_CFG}"
 )
 
-dolce_create_stubs("${PROJECT_NAME}-stubs"
-  "${ELF}"
-  exports.yml
+dolce_create_stubs("${SELF_STUB}" "${SELF}" "${VELF_CFG}"
   KERNEL
   LIB Sharpscale_stub
 )
 
 add_subdirectory(config-app)
+add_subdirectory(scaling-test)

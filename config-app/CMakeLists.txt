@@ -13,28 +13,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-project(sharpscale_config LANGUAGES C)
+# Build self
 
-add_custom_command(OUTPUT boot_param.bin
-  COMMAND dolce-make-bootparam app_memsize 0x2000 boot_param.bin
-)
-
-set(ELF "${PROJECT_NAME}.elf")
-set(SELF "${PROJECT_NAME}.self")
-set(VPK "${PROJECT_NAME}.vpk")
-
-set(TITLE_NAME "Sharpscale Config Menu")
-set(TITLE_ID "AKRK00005")
-set(TITLE_VER "01.07")
+set(ELF "config-app.elf")
+set(SELF "config-app.self")
+set(BOOTPARAM "${CMAKE_CURRENT_BINARY_DIR}/boot_param.bin")
 
 add_executable("${ELF}"
   main.c
-)
-
-target_compile_options("${ELF}"
-  PRIVATE -O3 -std=c99
-  PRIVATE -Wall -Wextra -Wdouble-promotion -Wshadow -Wundef
-  PRIVATE -fsingle-precision-constant -fno-common
 )
 
 target_include_directories("${ELF}"
@@ -54,11 +40,22 @@ target_link_libraries("${ELF}"
   SceSysmodule_stub
 )
 
+add_custom_command(OUTPUT "${BOOTPARAM}"
+  COMMAND dolce-make-bootparam app_memsize 0x2000 "${BOOTPARAM}"
+)
+
 dolce_create_self("${SELF}"
   "${ELF}"
   UNSAFE
-  BOOT_PARAM ${CMAKE_CURRENT_BINARY_DIR}/boot_param.bin
+  BOOT_PARAM "${BOOTPARAM}"
 )
+
+# Build VPK
+
+set(VPK "sharpscale-config.vpk")
+set(TITLE_NAME "Sharpscale Configuration Menu")
+set(TITLE_ID "AKRK00005")
+set(TITLE_VER "01.07")
 
 dolce_create_vpk("${VPK}" "${TITLE_ID}" "${SELF}"
   NAME "${TITLE_NAME}"
