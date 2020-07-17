@@ -16,12 +16,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include <stdbool.h>
+
 #include <psp2/appmgr.h>
 #include <psp2/ctrl.h>
 #include <psp2/kernel/clib.h>
 #include <psp2/kernel/processmgr.h>
 #include <psp2/kernel/sysmem.h>
+
+#include <psp2dbg.h>
 #include <vita2d_sys.h>
+
 #include "sharpscale.h"
 
 void *memset(void *dest, int ch, size_t count) {
@@ -49,10 +53,10 @@ void _start(int args, void *argp) { (void)args; (void)argp;
 	SceAppMgrBudgetInfo info = {0};
 	info.size = sizeof(info);
 	if (0 == sceAppMgrGetBudgetInfo(&info)) {
-		sceClibPrintf("Free LPDDR2: %d KB\n", info.freeLPDDR2 / 1024);
-		sceClibPrintf("Budget LPDDR2: %d KB\n", info.budgetLPDDR2 / 1024);
+		SCE_DBG_LOG_INFO("Free LPDDR2: %d KB\n", info.freeLPDDR2 / 1024);
+		SCE_DBG_LOG_INFO("Budget LPDDR2: %d KB\n", info.budgetLPDDR2 / 1024);
 	} else {
-		sceClibPrintf("Failed to retrieve application memory budget\n");
+		SCE_DBG_LOG_INFO("Failed to retrieve application memory budget\n");
 	}
 
 	SceUID memid = sceKernelAllocMemBlock(

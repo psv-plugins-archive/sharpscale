@@ -48,11 +48,17 @@ add_executable("${ELF}"
 
 target_link_libraries("${ELF}"
   fnblit
+  psp2dbg
+
   SceCtrl_stub
   SceDisplay_stub
   SceIofilemgr_stub
   SceLibKernel_stub
   SceSysmem_stub
+)
+
+target_compile_definitions("${ELF}" PRIVATE
+  SCE_DBG_LOG_PREFIX="\\033[0;36m[SharpscaleScalingTest]\\033[0m "
 )
 
 dolce_create_self("${SELF}"
@@ -64,7 +70,7 @@ dolce_create_self("${SELF}"
 set(VPK "sharpscale-scaling-test.vpk")
 set(TITLE_NAME "Sharpscale Scaling Test")
 set(TITLE_ID "AKRK00004")
-set(TITLE_VER "01.06")
+set(TITLE_VER "01.07")
 
 dolce_create_vpk("${VPK}" "${TITLE_ID}" "${SELF}"
   NAME "${TITLE_NAME}"

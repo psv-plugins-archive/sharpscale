@@ -30,17 +30,21 @@ add_compile_options(
   -fsingle-precision-constant -fno-common
 )
 
-if(LOG_PRINTF)
-  add_compile_definitions(LOG_PRINTF)
-endif()
-
-if(LOG_FILE)
-  add_compile_definitions(LOG_FILE)
-endif()
-
 add_link_options(
   -nostdlib
 )
+
+if(DEFINED LOG_ENABLE)
+  add_compile_definitions(SCE_DBG_LOGGING_ENABLED=${LOG_ENABLE})
+else()
+  add_compile_definitions(SCE_DBG_LOGGING_ENABLED=0)
+endif()
+
+if(DEFINED LOG_LEVEL)
+  add_compile_definitions(SCE_DBG_MINIMUM_LOG_LEVEL=${LOG_LEVEL})
+else()
+  add_compile_definitions(SCE_DBG_MINIMUM_LOG_LEVEL=SCE_DBG_LOG_LEVEL_INFO)
+endif()
 
 # Build self
 
@@ -56,13 +60,20 @@ add_executable("${ELF}"
 
 target_link_libraries("${ELF}"
   m
+
+  psp2dbgForKernel
+  taihenForKernel_stub
+  taihenModuleUtils_stub
+
   SceDebugForDriver_stub
   SceIofilemgrForDriver_stub
   SceSblACMgrForDriver_stub
   SceSysclibForDriver_stub
   SceSysmemForDriver_stub
-  taihenForKernel_stub
-  taihenModuleUtils_stub
+)
+
+target_compile_definitions("${ELF}" PRIVATE
+  SCE_DBG_LOG_PREFIX="\\033[0;35m[Sharpscale]\\033[0m "
 )
 
 dolce_create_self("${SELF}"

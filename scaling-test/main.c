@@ -17,13 +17,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <stdlib.h>
 #include <string.h>
+
 #include <psp2/ctrl.h>
 #include <psp2/display.h>
 #include <psp2/io/fcntl.h>
 #include <psp2/kernel/clib.h>
 #include <psp2/kernel/processmgr.h>
 #include <psp2/kernel/sysmem.h>
+
 #include <fnblit.h>
+#include <psp2dbg.h>
 
 #define SFN_FILE_BUF_LEN SCE_KERNEL_1MiB
 
@@ -142,7 +145,7 @@ void _start(int args, void *argp) { (void)args; (void)argp;
 		fnblit_printf(10, height - 42, "Sharpscale Scaling Test");
 		fnblit_printf(10, height - 26, "Copyright 2020 浅倉麗子");
 
-		sceClibPrintf("Selected resolution %dx%d\n", width, height);
+		SCE_DBG_LOG_INFO("Selected resolution %dx%d\n", width, height);
 	}
 
 	int res_idx = 0;

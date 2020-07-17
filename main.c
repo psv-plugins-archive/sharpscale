@@ -19,14 +19,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-#include <psp2kern/io/fcntl.h>
-#include <psp2kern/io/stat.h>
+
 #include <psp2kern/kernel/constants.h>
 #include <psp2kern/kernel/modulemgr.h>
-#include <psp2kern/kernel/sysmem.h>
 #include <psp2kern/lowio/iftu.h>
 #include <psp2kern/sblacmgr.h>
+
+#include <psp2dbg.h>
 #include <taihen.h>
+
 #include "config.h"
 #include "scedisplay.h"
 #include "sharpscale_internal.h"
@@ -37,31 +38,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define MIN(x, y) ((x) < (y) ? (x) : (y))
 
-__attribute__ ((__format__ (__printf__, 1, 2)))
-static void LOG(const char *fmt, ...) {
-	(void)fmt;
-
-	#ifdef LOG_PRINTF
-	ksceDebugPrintf("\033[0;35m[Sharpscale]\033[0m ");
-	va_list args;
-	va_start(args, fmt);
-	ksceDebugVprintf(fmt, args);
-	va_end(args);
-	#endif
-
-	#ifdef LOG_FILE
-	SceUID fd = ksceIoOpen("ur0:sharpscale.txt", SCE_O_WRONLY | SCE_O_CREAT | SCE_O_APPEND, 0777);
-	if (fd) {
-		char buf[0x100];
-		va_list args;
-		va_start(args, fmt);
-		ksceIoWrite(fd, buf, vsnprintf(buf, sizeof(buf), fmt, args));
-		va_end(args);
-		ksceIoClose(fd);
-	}
-	#endif
-}
-
 #define N_INJECT 9
 static SceUID inject_id[N_INJECT];
 
@@ -71,13 +47,13 @@ static tai_hook_ref_t hook_ref[N_HOOK];
 
 static SceUID INJECT_DATA(int idx, int mod, int seg, int ofs, void *data, int size) {
 	inject_id[idx] = taiInjectDataForKernel(KERNEL_PID, mod, seg, ofs, data, size);
-	LOG("Injected %d UID %08X\n", idx, inject_id[idx]);
+	SCE_DBG_LOG_INFO("Injected %d UID %08X\n", idx, inject_id[idx]);
 	return inject_id[idx];
 }
 
 static SceUID hook_import(int idx, char *mod, int libnid, int funcnid, void *func) {
 	hook_id[idx] = taiHookFunctionImportForKernel(KERNEL_PID, hook_ref+idx, mod, libnid, funcnid, func);
-	LOG("Hooked %d UID %08X\n", idx, hook_id[idx]);
+	SCE_DBG_LOG_INFO("Hooked %d UID %08X\n", idx, hook_id[idx]);
 	return hook_id[idx];
 }
 #define HOOK_IMPORT(idx, mod, libnid, funcnid, func)\
@@ -85,7 +61,7 @@ static SceUID hook_import(int idx, char *mod, int libnid, int funcnid, void *fun
 
 static SceUID hook_offset(int idx, int mod, int ofs, void *func) {
 	hook_id[idx] = taiHookFunctionOffsetForKernel(KERNEL_PID, hook_ref+idx, mod, 0, ofs, 1, func);
-	LOG("Hooked %d UID %08X\n", idx, hook_id[idx]);
+	SCE_DBG_LOG_INFO("Hooked %d UID %08X\n", idx, hook_id[idx]);
 	return hook_id[idx];
 }
 #define HOOK_OFFSET(idx, mod, ofs, func)\
@@ -95,7 +71,7 @@ static int UNINJECT(int idx) {
 	int ret = 0;
 	if (inject_id[idx] >= 0) {
 		ret = taiInjectReleaseForKernel(inject_id[idx]);
-		LOG("Uninjected %d UID %08X\n", idx, inject_id[idx]);
+		SCE_DBG_LOG_INFO("Uninjected %d UID %08X\n", idx, inject_id[idx]);
 		inject_id[idx] = -1;
 	}
 	return ret;
@@ -105,7 +81,7 @@ static int UNHOOK(int idx) {
 	int ret = 0;
 	if (hook_id[idx] >= 0) {
 		ret = taiHookReleaseForKernel(hook_id[idx], hook_ref[idx]);
-		LOG("Unhooked %d UID %08X\n", idx, hook_id[idx]);
+		SCE_DBG_LOG_INFO("Unhooked %d UID %08X\n", idx, hook_id[idx]);
 		hook_id[idx] = -1;
 		hook_ref[idx] = -1;
 	}

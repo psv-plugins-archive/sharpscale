@@ -28,9 +28,12 @@ target_include_directories("${ELF}"
 )
 
 target_link_libraries("${ELF}"
+  psp2dbg
   vita2d_sys
+
   m
   gcc
+
   Sharpscale_stub
   SceAppMgr_stub
   SceCtrl_stub
@@ -40,6 +43,10 @@ target_link_libraries("${ELF}"
   ScePgf_stub
   SceSysmem_stub
   SceSysmodule_stub
+)
+
+target_compile_definitions("${ELF}" PRIVATE
+  SCE_DBG_LOG_PREFIX="\\033[0;36m[SharpscaleConfiguration]\\033[0m "
 )
 
 add_custom_command(OUTPUT "${BOOTPARAM}"
@@ -57,7 +64,7 @@ dolce_create_self("${SELF}"
 set(VPK "sharpscale-config.vpk")
 set(TITLE_NAME "Sharpscale Configuration Menu")
 set(TITLE_ID "AKRK00005")
-set(TITLE_VER "01.09")
+set(TITLE_VER "01.10")
 
 dolce_create_vpk("${VPK}" "${TITLE_ID}" "${SELF}"
   NAME "${TITLE_NAME}"
