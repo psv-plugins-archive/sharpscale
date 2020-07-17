@@ -13,6 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+add_compile_options(-flto)
+
 # Build self
 
 set(ELF "config-app.elf")
@@ -64,7 +66,7 @@ dolce_create_self("${SELF}"
 set(VPK "sharpscale-config.vpk")
 set(TITLE_NAME "Sharpscale Configuration Menu")
 set(TITLE_ID "AKRK00005")
-set(TITLE_VER "01.10")
+set(TITLE_VER "01.11")
 
 dolce_create_vpk("${VPK}" "${TITLE_ID}" "${SELF}"
   NAME "${TITLE_NAME}"
