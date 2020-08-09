@@ -45,24 +45,41 @@ static SceUID inject_id[N_INJECT];
 static SceUID hook_id[N_HOOK];
 static tai_hook_ref_t hook_ref[N_HOOK];
 
-static SceUID INJECT_DATA(int idx, int mod, int seg, int ofs, void *data, int size) {
-	inject_id[idx] = taiInjectDataForKernel(KERNEL_PID, mod, seg, ofs, data, size);
-	SCE_DBG_LOG_INFO("Injected %d UID %08X\n", idx, inject_id[idx]);
-	return inject_id[idx];
+static SceUID inject_data(int idx, int mod, int seg, int ofs, void *data, int size) {
+	SceUID ret = taiInjectDataForKernel(KERNEL_PID, mod, seg, ofs, data, size);
+	if (ret >= 0) {
+		SCE_DBG_LOG_INFO("Injected %d UID %08X\n", idx, ret);
+		inject_id[idx] = ret;
+	} else {
+		SCE_DBG_LOG_ERROR("Failed to inject %d error %08X\n", idx, ret);
+	}
+	return ret;
 }
+#define INJECT_DATA(idx, mod, seg, ofs, data, size)\
+	inject_data(idx, mod, seg, ofs, data, size)
 
 static SceUID hook_import(int idx, char *mod, int libnid, int funcnid, void *func) {
-	hook_id[idx] = taiHookFunctionImportForKernel(KERNEL_PID, hook_ref+idx, mod, libnid, funcnid, func);
-	SCE_DBG_LOG_INFO("Hooked %d UID %08X\n", idx, hook_id[idx]);
-	return hook_id[idx];
+	SceUID ret = taiHookFunctionImportForKernel(KERNEL_PID, hook_ref+idx, mod, libnid, funcnid, func);
+	if (ret >= 0) {
+		SCE_DBG_LOG_INFO("Hooked %d UID %08X\n", idx, ret);
+		hook_id[idx] = ret;
+	} else {
+		SCE_DBG_LOG_ERROR("Failed to hook %d error %08X\n", idx, ret);
+	}
+	return ret;
 }
 #define HOOK_IMPORT(idx, mod, libnid, funcnid, func)\
 	hook_import(idx, mod, libnid, funcnid, func##_hook)
 
 static SceUID hook_offset(int idx, int mod, int ofs, void *func) {
-	hook_id[idx] = taiHookFunctionOffsetForKernel(KERNEL_PID, hook_ref+idx, mod, 0, ofs, 1, func);
-	SCE_DBG_LOG_INFO("Hooked %d UID %08X\n", idx, hook_id[idx]);
-	return hook_id[idx];
+	SceUID ret = taiHookFunctionOffsetForKernel(KERNEL_PID, hook_ref+idx, mod, 0, ofs, 1, func);
+	if (ret >= 0) {
+		SCE_DBG_LOG_INFO("Hooked %d UID %08X\n", idx, ret);
+		hook_id[idx] = ret;
+	} else {
+		SCE_DBG_LOG_ERROR("Failed to hook %d error %08X\n", idx, ret);
+	}
+	return ret;
 }
 #define HOOK_OFFSET(idx, mod, ofs, func)\
 	hook_offset(idx, mod, ofs, func##_hook)
@@ -71,8 +88,14 @@ static int UNINJECT(int idx) {
 	int ret = 0;
 	if (inject_id[idx] >= 0) {
 		ret = taiInjectReleaseForKernel(inject_id[idx]);
-		SCE_DBG_LOG_INFO("Uninjected %d UID %08X\n", idx, inject_id[idx]);
-		inject_id[idx] = -1;
+		if (ret == 0) {
+			SCE_DBG_LOG_INFO("Uninjected %d UID %08X\n", idx, inject_id[idx]);
+			inject_id[idx] = -1;
+		} else {
+			SCE_DBG_LOG_ERROR("Failed to uninject %d UID %08X error %08X\n", idx, inject_id[idx], ret);
+		}
+	} else {
+		SCE_DBG_LOG_WARNING("Tried to uninject %d but not injected\n", idx);
 	}
 	return ret;
 }
@@ -81,9 +104,15 @@ static int UNHOOK(int idx) {
 	int ret = 0;
 	if (hook_id[idx] >= 0) {
 		ret = taiHookReleaseForKernel(hook_id[idx], hook_ref[idx]);
-		SCE_DBG_LOG_INFO("Unhooked %d UID %08X\n", idx, hook_id[idx]);
-		hook_id[idx] = -1;
-		hook_ref[idx] = -1;
+		if (ret == 0) {
+			SCE_DBG_LOG_INFO("Unhooked %d UID %08X\n", idx, hook_id[idx]);
+			hook_id[idx] = -1;
+			hook_ref[idx] = -1;
+		} else {
+			SCE_DBG_LOG_ERROR("Failed to unhook %d UID %08X error %08X\n", idx, hook_id[idx], ret);
+		}
+	} else {
+		SCE_DBG_LOG_WARNING("Tried to unhook %d but not hooked\n", idx);
 	}
 	return ret;
 }
@@ -289,6 +318,8 @@ static void cleanup(void) {
 }
 
 int module_start(SceSize args, const void *argp) { (void)args; (void)argp;
+	int ret;
+
 	startup();
 
 	if (read_config(&ss_config) < 0) {
@@ -297,8 +328,14 @@ int module_start(SceSize args, const void *argp) { (void)args; (void)argp;
 
 	tai_module_info_t minfo;
 	minfo.size = sizeof(minfo);
-	GLZ(taiGetModuleInfoForKernel(KERNEL_PID, "SceDisplay", &minfo));
-	scedisplay_uid = minfo.modid;
+	ret = taiGetModuleInfoForKernel(KERNEL_PID, "SceDisplay", &minfo);
+	if (ret == 0) {
+		SCE_DBG_LOG_INFO("SceDisplay module info found\n");
+		scedisplay_uid = minfo.modid;
+	} else {
+		SCE_DBG_LOG_ERROR("Failed to get module info for SceDisplay error %08X\n", ret);
+		goto fail;
+	}
 
 	GLZ(GET_OFFSET(scedisplay_uid, 1, 0x000, &head_data));
 	GLZ(GET_OFFSET(scedisplay_uid, 1, 0x1D4, &primary_head_idx));
@@ -309,10 +346,12 @@ int module_start(SceSize args, const void *argp) { (void)args; (void)argp;
 
 	GLZ(set_unlock_fb_size(ss_config.unlock_fb_size));
 
+	SCE_DBG_LOG_INFO("module_start success\n");
 	return SCE_KERNEL_START_SUCCESS;
 
 fail:
 	cleanup();
+	SCE_DBG_LOG_ERROR("module_start failed\n");
 	return SCE_KERNEL_START_FAILED;
 }
 

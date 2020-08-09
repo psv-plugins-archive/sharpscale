@@ -51,37 +51,61 @@ static int text_yellow(int a) {
 void _start(int args, void *argp) { (void)args; (void)argp;
 	SCE_DBG_FILELOG_INIT("ux0:/sharpscale-config.log");
 
+	// Show application memory budget information
+
 	SceAppMgrBudgetInfo info = {0};
 	info.size = sizeof(info);
 	if (0 == sceAppMgrGetBudgetInfo(&info)) {
 		SCE_DBG_LOG_INFO("Free Main: %d KB\n", info.freeMain / 1024);
 		SCE_DBG_LOG_INFO("Budget Main: %d KB\n", info.budgetMain/ 1024);
 	} else {
-		SCE_DBG_LOG_INFO("Failed to retrieve application memory budget\n");
+		SCE_DBG_LOG_ERROR("Failed to retrieve application memory budget\n");
 	}
+
+	// Allocate memory block for vita2d heap
 
 	SceUID memid = sceKernelAllocMemBlock(
 		"SharpscaleConfigMemBlock",
 		SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE,
 		CLIB_HEAP_SIZE,
 		NULL);
-	if (memid < 0) { goto done; }
+	if (memid >= 0) {
+		SCE_DBG_LOG_INFO("Memblock allocated UID %08X\n", memid);
+	} else {
+		SCE_DBG_LOG_ERROR("Failed to allocate memblock error %08X\n", memid);
+		goto done;
+	}
 	void *membase;
 	sceKernelGetMemBlockBase(memid, &membase);
 
+	// Initialise vita2d
+
 	vita2d_clib_pass_mspace(sceClibMspaceCreate(membase, CLIB_HEAP_SIZE));
-	vita2d_init_with_msaa_and_memsize(
+
+	int ret = vita2d_init_with_msaa_and_memsize(
 		SCE_KERNEL_128KiB,  // temp pool size
 		SCE_KERNEL_32KiB,   // vdm ring buffer size
 		SCE_KERNEL_128KiB,  // vertex ring buffer size
 		SCE_KERNEL_64KiB,   // fragment ring buffer size
 		SCE_GXM_DEFAULT_FRAGMENT_USSE_RING_BUFFER_SIZE,
 		SCE_GXM_MULTISAMPLE_NONE);
+	if (ret == 1) {
+		SCE_DBG_LOG_INFO("vita2d initialise success\n");
+	} else {
+		SCE_DBG_LOG_ERROR("vita2d initialise failed\n");
+		goto done;
+	}
+
 	vita2d_set_vblank_wait(0);
 	vita2d_set_clear_color(BG_COLOUR);
 
-	vita2d_pgf *pgf;
-	pgf = vita2d_load_default_pgf();
+	vita2d_pgf *pgf = vita2d_load_default_pgf();
+	if (pgf) {
+		SCE_DBG_LOG_INFO("vita2d pgf load success\n");
+	} else {
+		SCE_DBG_LOG_ERROR("vita2d pdf load error\n");
+		goto done;
+	}
 
 	void draw_text(int x, int y, int colour, char *txt) {
 		vita2d_pgf_draw_text(pgf, x, y, colour, 1.0, txt);
@@ -101,7 +125,11 @@ void _start(int args, void *argp) { (void)args; (void)argp;
 	SceCtrlData last_ctrl = {0};
 	SharpscaleConfig config = {0};
 
-	bool kmod_linked = *(uint32_t*)SharpscaleGetConfig != 0xE24FC008;
+	// Stubs have ARM instructions
+	uint32_t *opcode = (uint32_t*)SharpscaleGetConfig;
+	SCE_DBG_LOG_INFO("stub opcode %08X %08X %08X\n", opcode[0], opcode[1], opcode[2]);
+
+	bool kmod_linked = opcode[0] != 0xE24FC008;
 	if (kmod_linked) {
 		SharpscaleGetConfig(&config);
 	}

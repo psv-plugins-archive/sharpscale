@@ -16,8 +16,13 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include <string.h>
+
+#include <psp2kern/kernel/error.h>
 #include <psp2kern/kernel/iofilemgr.h>
 #include <psp2kern/kernel/sysmem.h>
+
+#include <psp2dbg.h>
+
 #include "config.h"
 #include "sharpscale_internal.h"
 
@@ -28,10 +33,28 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 SharpscaleConfig ss_config;
 
 static bool is_config_valid(SharpscaleConfig *config) {
-	return config->mode < SHARPSCALE_MODE_INVALID
+	bool is_valid = config->mode < SHARPSCALE_MODE_INVALID
 		&& config->psone_ar < SHARPSCALE_PSONE_AR_INVALID
 		&& (config->bilinear == true || config->bilinear == false)
 		&& (config->unlock_fb_size == true || config->unlock_fb_size == false);
+	if (is_valid) {
+		SCE_DBG_LOG_DEBUG("Config is valid\n");
+	} else {
+		SCE_DBG_LOG_ERROR("Config is invalid\n");
+	}
+	return is_valid;
+}
+
+static int mkdirp(const char *dirname, SceIoMode mode) {
+	int ret = ksceIoMkdir(dirname, mode);
+	if (ret == 0) {
+		SCE_DBG_LOG_INFO("Created directory %s\n", dirname);
+	} else if (ret == (int)SCE_ERROR_ERRNO_EEXIST) {
+		SCE_DBG_LOG_INFO("Directory %s already exists\n", dirname);
+	} else {
+		SCE_DBG_LOG_ERROR("Failed to create directory %s error %08X\n", dirname, ret);
+	}
+	return ret;
 }
 
 int reset_config(SharpscaleConfig *config) {
@@ -39,60 +62,93 @@ int reset_config(SharpscaleConfig *config) {
 	config->psone_ar = SHARPSCALE_PSONE_AR_4_3;
 	config->bilinear = false;
 	config->unlock_fb_size = false;
+	SCE_DBG_LOG_WARNING("Config has been reset\n");
 	return 0;
 }
 
 int read_config(SharpscaleConfig *config) {
 	SceUID fd = ksceIoOpen(CONFIG_PATH, SCE_O_RDONLY, 0);
-	if (fd < 0) { goto fail; }
+	if (fd >= 0) {
+		SCE_DBG_LOG_INFO("Opened config file %s UID %08X\n", CONFIG_PATH, fd);
+	} else {
+		SCE_DBG_LOG_ERROR("Failed to open config file %s error %08X\n", CONFIG_PATH, fd);
+		goto fail;
+	}
 
 	int ret = ksceIoRead(fd, config, sizeof(*config));
 	ksceIoClose(fd);
-	if (ret != sizeof(*config)) { goto fail; }
+	if (ret == sizeof(*config)) {
+		SCE_DBG_LOG_INFO("Read %d bytes\n", ret);
+	} else {
+		SCE_DBG_LOG_ERROR("Failed to read error %08X\n", ret);
+		goto fail;
+	}
 
 	if (!is_config_valid(config)) { goto fail; }
 
+	SCE_DBG_LOG_INFO("read_config success\n");
 	return 0;
 
 fail:
+	SCE_DBG_LOG_ERROR("read_config failed\n");
 	return -1;
 }
 
 int write_config(SharpscaleConfig *config) {
 	if (!is_config_valid(config)) { goto fail; }
 
-	ksceIoMkdir(BASE_PATH, SCE_STM_RWO);
-	ksceIoMkdir(SS_BASE_PATH, SCE_STM_RWO);
+	mkdirp(BASE_PATH, SCE_STM_RWO);
+	mkdirp(SS_BASE_PATH, SCE_STM_RWO);
+
 	SceUID fd = ksceIoOpen(CONFIG_PATH, SCE_O_WRONLY | SCE_O_CREAT, SCE_STM_RWO);
-	if (fd < 0) { goto fail; }
+	if (fd >= 0) {
+		SCE_DBG_LOG_INFO("Opened config file %s UID %08X\n", CONFIG_PATH, fd);
+	} else {
+		SCE_DBG_LOG_ERROR("Failed to open config file %s error %08X\n", CONFIG_PATH, fd);
+		goto fail;
+	}
 
 	int ret = ksceIoWrite(fd, config, sizeof(*config));
 	ksceIoClose(fd);
-	if (ret != sizeof(*config)) { goto fail; }
+	if (ret == sizeof(*config)) {
+		SCE_DBG_LOG_INFO("Wrote %d bytes\n", ret);
+	} else {
+		SCE_DBG_LOG_ERROR("Failed to write error %08X\n", ret);
+		goto fail;
+	}
 
+	SCE_DBG_LOG_INFO("write_config success\n");
 	return 0;
 
 fail:
+	SCE_DBG_LOG_ERROR("write_config failed\n");
 	return -1;
 }
 
 int SharpscaleGetConfig(SharpscaleConfig *config) {
 	if (!is_config_valid(&ss_config)) { goto fail; }
-	return ksceKernelMemcpyKernelToUser((uintptr_t)config, &ss_config, sizeof(*config));
+	if (ksceKernelMemcpyKernelToUser((uintptr_t)config, &ss_config, sizeof(*config)) < 0) { goto fail; }
+
+	SCE_DBG_LOG_DEBUG("SharpscaleGetConfig success\n");
+	return 0;
 
 fail:
+	SCE_DBG_LOG_ERROR("SharpscaleGetConfig failed\n");
 	return -1;
 }
 
 int SharpscaleSetConfig(SharpscaleConfig *config) {
 	SharpscaleConfig kconfig;
-	int ret = ksceKernelMemcpyUserToKernel(&kconfig, (uintptr_t)config, sizeof(kconfig));
-	if (ret < 0) { goto fail; }
+	if (ksceKernelMemcpyUserToKernel(&kconfig, (uintptr_t)config, sizeof(kconfig)) < 0) { goto fail; }
 	if (!is_config_valid(&kconfig)) { goto fail; }
 	if (set_unlock_fb_size(kconfig.unlock_fb_size) < 0) { goto fail; }
 	memcpy(&ss_config, &kconfig, sizeof(ss_config));
-	return write_config(&ss_config);
+	if (write_config(&ss_config) < 0) { goto fail; }
+
+	SCE_DBG_LOG_DEBUG("SharpscaleSetConfig success\n");
+	return 0;
 
 fail:
+	SCE_DBG_LOG_ERROR("SharpscaleSetConfig failed\n");
 	return -1;
 }
