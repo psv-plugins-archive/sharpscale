@@ -53,8 +53,8 @@ void _start(int args, void *argp) { (void)args; (void)argp;
 	SceAppMgrBudgetInfo info = {0};
 	info.size = sizeof(info);
 	if (0 == sceAppMgrGetBudgetInfo(&info)) {
-		SCE_DBG_LOG_INFO("Free LPDDR2: %d KB\n", info.freeLPDDR2 / 1024);
-		SCE_DBG_LOG_INFO("Budget LPDDR2: %d KB\n", info.budgetLPDDR2 / 1024);
+		SCE_DBG_LOG_INFO("Free Main: %d KB\n", info.freeMain / 1024);
+		SCE_DBG_LOG_INFO("Budget Main: %d KB\n", info.budgetMain/ 1024);
 	} else {
 		SCE_DBG_LOG_INFO("Failed to retrieve application memory budget\n");
 	}

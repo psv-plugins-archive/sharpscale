@@ -15,12 +15,9 @@
 
 cmake_minimum_required(VERSION 3.13)
 
-if(DEFINED ENV{DOLCESDK})
-  set(CMAKE_TOOLCHAIN_FILE "$ENV{DOLCESDK}/share/dolce.toolchain.cmake")
-  include("$ENV{DOLCESDK}/share/dolce.cmake" REQUIRED)
-else()
-  message(FATAL_ERROR "Please define DOLCESDK to point to your SDK path!")
-endif()
+set(CMAKE_TOOLCHAIN_FILE "$ENV{DOLCESDK}/share/dolce.toolchain.cmake" CACHE PATH "DolceSDK toolchain file")
+set(DOLCESDK_CMAKE_FILE "$ENV{DOLCESDK}/share/dolce.cmake" CACHE PATH "DolceSDK CMake functions file")
+include("${DOLCESDK_CMAKE_FILE}" REQUIRED)
 
 project(sharpscale LANGUAGES C)
 
@@ -34,17 +31,13 @@ add_link_options(
   -nostdlib
 )
 
-if(DEFINED LOG_ENABLE)
-  add_compile_definitions(SCE_DBG_LOGGING_ENABLED=${LOG_ENABLE})
-else()
-  add_compile_definitions(SCE_DBG_LOGGING_ENABLED=0)
-endif()
+set(LOG_ENABLE "1" CACHE STRING "Enable logging")
+set(LOG_LEVEL "SCE_DBG_LOG_LEVEL_INFO" CACHE STRING "Log verbosity level")
 
-if(DEFINED LOG_LEVEL)
-  add_compile_definitions(SCE_DBG_MINIMUM_LOG_LEVEL=${LOG_LEVEL})
-else()
-  add_compile_definitions(SCE_DBG_MINIMUM_LOG_LEVEL=SCE_DBG_LOG_LEVEL_INFO)
-endif()
+add_compile_definitions(
+  SCE_DBG_LOGGING_ENABLED=${LOG_ENABLE}
+  SCE_DBG_MINIMUM_LOG_LEVEL=${LOG_LEVEL}
+)
 
 # Build self
 
@@ -74,6 +67,10 @@ target_link_libraries("${ELF}"
 
 target_compile_definitions("${ELF}" PRIVATE
   SCE_DBG_LOG_PREFIX="\\033[0;35m[Sharpscale]\\033[0m "
+)
+
+target_link_options("${ELF}" PRIVATE
+  --entry=module_start
 )
 
 dolce_create_self("${SELF}"

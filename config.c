@@ -16,8 +16,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include <string.h>
-#include <psp2kern/io/fcntl.h>
-#include <psp2kern/io/stat.h>
+#include <psp2kern/kernel/iofilemgr.h>
 #include <psp2kern/kernel/sysmem.h>
 #include "config.h"
 #include "sharpscale_internal.h"
@@ -62,9 +61,9 @@ fail:
 int write_config(SharpscaleConfig *config) {
 	if (!is_config_valid(config)) { goto fail; }
 
-	ksceIoMkdir(BASE_PATH, 0777);
-	ksceIoMkdir(SS_BASE_PATH, 0777);
-	SceUID fd = ksceIoOpen(CONFIG_PATH, SCE_O_WRONLY | SCE_O_CREAT, 0777);
+	ksceIoMkdir(BASE_PATH, SCE_STM_RWO);
+	ksceIoMkdir(SS_BASE_PATH, SCE_STM_RWO);
+	SceUID fd = ksceIoOpen(CONFIG_PATH, SCE_O_WRONLY | SCE_O_CREAT, SCE_STM_RWO);
 	if (fd < 0) { goto fail; }
 
 	int ret = ksceIoWrite(fd, config, sizeof(*config));

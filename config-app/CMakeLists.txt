@@ -41,8 +41,10 @@ target_link_libraries("${ELF}"
   SceCtrl_stub
   SceDisplay_stub
   SceGxm_stub
+  SceKernelDmacMgr_stub
   SceLibKernel_stub
   ScePgf_stub
+  SceProcessmgr_stub
   SceSysmem_stub
   SceSysmodule_stub
 )

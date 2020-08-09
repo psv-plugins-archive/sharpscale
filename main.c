@@ -286,8 +286,7 @@ static void cleanup(void) {
 	for (int i = 0; i < N_HOOK; i++) { UNHOOK(i); }
 }
 
-int _start() __attribute__ ((weak, alias("module_start")));
-int module_start(SceSize argc, const void *argv) { (void)argc; (void)argv;
+int module_start(SceSize args, const void *argp) { (void)args; (void)argp;
 	startup();
 
 	if (read_config(&ss_config) < 0) {
@@ -315,7 +314,7 @@ fail:
 	return SCE_KERNEL_START_FAILED;
 }
 
-int module_stop(SceSize argc, const void *argv) { (void)argc; (void)argv;
+int module_stop(SceSize args, const void *argp) { (void)args; (void)argp;
 	cleanup();
 	return SCE_KERNEL_STOP_SUCCESS;
 }
