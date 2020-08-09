@@ -49,6 +49,7 @@ static int text_yellow(int a) {
 }
 
 void _start(int args, void *argp) { (void)args; (void)argp;
+	SCE_DBG_FILELOG_INIT("ux0:/sharpscale-config.log");
 
 	SceAppMgrBudgetInfo info = {0};
 	info.size = sizeof(info);
@@ -196,5 +197,6 @@ void _start(int args, void *argp) { (void)args; (void)argp;
 	}
 
 done:
+	SCE_DBG_FILELOG_TERM();
 	sceKernelExitProcess(0);
 }

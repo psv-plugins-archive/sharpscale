@@ -32,10 +32,18 @@ add_link_options(
 )
 
 set(LOG_ENABLE "1" CACHE STRING "Enable logging")
+set(FILELOG_ENABLE "0" CACHE STRING "Enable file logging")
 set(LOG_LEVEL "SCE_DBG_LOG_LEVEL_INFO" CACHE STRING "Log verbosity level")
+
+if(FILELOG_ENABLE)
+  set(LOG_PREFIX "[Sharpscale] ")
+else()
+  set(LOG_PREFIX "\\033[0;35m[Sharpscale]\\033[0m ")
+endif()
 
 add_compile_definitions(
   SCE_DBG_LOGGING_ENABLED=${LOG_ENABLE}
+  SCE_DBG_FILELOG_ENABLED=${FILELOG_ENABLE}
   SCE_DBG_MINIMUM_LOG_LEVEL=${LOG_LEVEL}
 )
 
@@ -66,7 +74,7 @@ target_link_libraries("${ELF}"
 )
 
 target_compile_definitions("${ELF}" PRIVATE
-  SCE_DBG_LOG_PREFIX="\\033[0;35m[Sharpscale]\\033[0m "
+  SCE_DBG_LOG_PREFIX="${LOG_PREFIX}"
 )
 
 target_link_options("${ELF}" PRIVATE

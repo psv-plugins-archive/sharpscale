@@ -13,6 +13,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+if(FILELOG_ENABLE)
+  set(LOG_PREFIX "[SharpscaleScalingTest] ")
+else()
+  set(LOG_PREFIX "\\033[0;33m[SharpscaleScalingTest]\\033[0m ")
+endif()
+
 # Build font
 
 set(FONT_BASE "unifont-13.0.02")
@@ -58,7 +64,7 @@ target_link_libraries("${ELF}"
 )
 
 target_compile_definitions("${ELF}" PRIVATE
-  SCE_DBG_LOG_PREFIX="\\033[0;36m[SharpscaleScalingTest]\\033[0m "
+  SCE_DBG_LOG_PREFIX="${LOG_PREFIX}"
 )
 
 dolce_create_self("${SELF}"

@@ -100,6 +100,7 @@ static void render(int *fb_base, int width, int pitch, int height) {
 }
 
 void _start(int args, void *argp) { (void)args; (void)argp;
+	SCE_DBG_FILELOG_INIT("ux0:/sharpscale-scaling-test.log");
 
 	SceUID font_mem_id = sceKernelAllocMemBlock(
 		"FontFileMem",
@@ -185,5 +186,6 @@ void _start(int args, void *argp) { (void)args; (void)argp;
 	}
 
 done:
+	SCE_DBG_FILELOG_TERM();
 	sceKernelExitProcess(0);
 }

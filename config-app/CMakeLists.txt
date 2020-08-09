@@ -15,6 +15,12 @@
 
 add_compile_options(-flto)
 
+if(FILELOG_ENABLE)
+  set(LOG_PREFIX "[SharpscaleConfiguration] ")
+else()
+  set(LOG_PREFIX "\\033[0;33m[SharpscaleConfiguration]\\033[0m ")
+endif()
+
 # Build self
 
 set(ELF "config-app.elf")
@@ -50,7 +56,7 @@ target_link_libraries("${ELF}"
 )
 
 target_compile_definitions("${ELF}" PRIVATE
-  SCE_DBG_LOG_PREFIX="\\033[0;36m[SharpscaleConfiguration]\\033[0m "
+  SCE_DBG_LOG_PREFIX="${LOG_PREFIX}"
 )
 
 add_custom_command(OUTPUT "${BOOTPARAM}"
