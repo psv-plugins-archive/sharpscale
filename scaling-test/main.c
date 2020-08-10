@@ -28,8 +28,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <fnblit.h>
 #include <psp2dbg.h>
 
-#define SFN_FILE_BUF_LEN SCE_KERNEL_1MiB
-
 #define ALIGN(x, a) (((x) + ((a) - 1)) & ~((a) - 1))
 
 #define WHITE 0xFFFFFFFF
@@ -102,21 +100,25 @@ static void render(int *fb_base, int width, int pitch, int height) {
 void _start(int args, void *argp) { (void)args; (void)argp;
 	SCE_DBG_FILELOG_INIT("ux0:/sharpscale-scaling-test.log");
 
+	SceUID sfn_file_fd = sceIoOpen("app0:font.sfn", SCE_O_RDONLY, 0);
+	if (sfn_file_fd < 0) { goto done; }
+
+	SceIoStat sfn_file_st;
+	sceClibMemset(&sfn_file_st, 0x00, sizeof(sfn_file_st));
+	if (sceIoGetstatByFd(sfn_file_fd, &sfn_file_st) < 0) { goto done; }
+
 	SceUID font_mem_id = sceKernelAllocMemBlock(
 		"FontFileMem",
-		SCE_KERNEL_MEMBLOCK_TYPE_USER_RW_UNCACHE,
-		ALIGN(SFN_FILE_BUF_LEN, SCE_KERNEL_4KiB),
+		SCE_KERNEL_MEMBLOCK_TYPE_USER_RW,
+		ALIGN(sfn_file_st.st_size, SCE_KERNEL_4KiB),
 		NULL);
 	if (font_mem_id < 0) { goto done; }
 	void *sfn_file;
 	sceKernelGetMemBlockBase(font_mem_id, &sfn_file);
 
-	SceUID sfn_file_fd = sceIoOpen("app0:font.sfn", SCE_O_RDONLY, 0);
-	if (sfn_file_fd < 0) { goto done; }
-
-	int bytes_read = sceIoRead(sfn_file_fd, sfn_file, SFN_FILE_BUF_LEN);
+	int bytes_read = sceIoRead(sfn_file_fd, sfn_file, sfn_file_st.st_size);
 	sceIoClose(sfn_file_fd);
-	if (bytes_read < 0 || bytes_read == SFN_FILE_BUF_LEN) { goto done; }
+	if (bytes_read < 0 || bytes_read != sfn_file_st.st_size) { goto done; }
 
 	fnblit_set_font(sfn_file);
 	fnblit_set_fg(WHITE);
