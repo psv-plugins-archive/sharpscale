@@ -138,6 +138,10 @@ void _start(int args, void *argp) { (void)args; (void)argp;
 	int height = 0;
 
 	void select_res(int idx) {
+		// blank the screen first
+		sceDisplaySetFrameBuf(NULL, SCE_DISPLAY_SETBUF_NEXTFRAME);
+		sceDisplayWaitVblankStartMulti(2);
+
 		width = fb_res[idx].w;
 		pitch = ALIGN(width, 64);
 		height = fb_res[idx].h;
