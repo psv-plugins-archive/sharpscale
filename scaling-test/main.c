@@ -15,12 +15,10 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
-#include <stdlib.h>
-#include <string.h>
-
 #include <psp2/ctrl.h>
 #include <psp2/display.h>
 #include <psp2/kernel/clib.h>
+#include <psp2/kernel/dmac.h>
 #include <psp2/kernel/iofilemgr.h>
 #include <psp2/kernel/processmgr.h>
 #include <psp2/kernel/sysmem.h>
@@ -133,9 +131,8 @@ void _start(int args, void *argp) { (void)args; (void)argp;
 	int *fb_base;
 	sceKernelGetMemBlockBase(fb_mem_id, (void**)&fb_base);
 
-	int width = 0;
-	int pitch = 0;
-	int height = 0;
+	SceDisplayFrameBuf fb;
+	int width, pitch, height;
 
 	void select_res(int idx) {
 		// blank the screen first
@@ -152,7 +149,17 @@ void _start(int args, void *argp) { (void)args; (void)argp;
 		fnblit_printf(10, height - 42, "Sharpscale Scaling Test");
 		fnblit_printf(10, height - 26, "Copyright 2020 浅倉麗子");
 
-		SCE_DBG_LOG_INFO("Selected resolution %dx%d\n", width, height);
+		fb = (SceDisplayFrameBuf){sizeof(fb), fb_base, pitch, SCE_DISPLAY_PIXELFORMAT_A8B8G8R8, width, height};
+		int ret = sceDisplaySetFrameBuf(&fb, SCE_DISPLAY_SETBUF_NEXTFRAME);
+		SCE_DBG_LOG_INFO("Set resolution %dx%d %s\n", width, height, ret == 0 ? "success" : "failed");
+
+		if (ret != 0) {
+			sceDmacMemset(fb_base, 0xFF, 960 * 544 * 4);
+			fnblit_set_fb(fb_base, 960, 960, 544);
+			fnblit_printf(10, 10, "%dx%d failed", width, height);
+			fb = (SceDisplayFrameBuf){sizeof(fb), fb_base, 960, SCE_DISPLAY_PIXELFORMAT_A8B8G8R8, 960, 544};
+			sceDisplaySetFrameBuf(&fb, SCE_DISPLAY_SETBUF_NEXTFRAME);
+		}
 	}
 
 	int res_idx = 0;
@@ -163,7 +170,6 @@ void _start(int args, void *argp) { (void)args; (void)argp;
 
 	for (;;) {
 		SceCtrlData ctrl;
-		sceClibMemset(&ctrl, 0x00, sizeof(ctrl));
 
 		if (sceCtrlReadBufferPositive(0, &ctrl, 1) == 1) {
 			int btns = ~last_ctrl.buttons & ctrl.buttons;
@@ -179,14 +185,6 @@ void _start(int args, void *argp) { (void)args; (void)argp;
 
 		last_ctrl = ctrl;
 
-		SceDisplayFrameBuf fb = {
-			sizeof(fb),
-			fb_base,
-			pitch,
-			SCE_DISPLAY_PIXELFORMAT_A8B8G8R8,
-			width,
-			height
-		};
 		sceDisplaySetFrameBuf(&fb, SCE_DISPLAY_SETBUF_NEXTFRAME);
 		sceDisplayWaitVblankStartMulti(2);
 	}
