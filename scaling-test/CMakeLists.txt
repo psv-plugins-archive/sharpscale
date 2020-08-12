@@ -13,6 +13,8 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+add_compile_options(-flto)
+
 if(FILELOG_ENABLE)
   set(LOG_PREFIX "[SharpscaleScalingTest] ")
 else()
@@ -58,8 +60,8 @@ target_link_libraries("${ELF}"
 
   SceCtrl_stub
   SceDisplay_stub
-  SceKernelDmacMgr_stub
   SceIofilemgr_stub
+  SceKernelDmacMgr_stub
   SceLibKernel_stub
   SceSysmem_stub
 )
@@ -77,7 +79,7 @@ dolce_create_self("${SELF}"
 set(VPK "sharpscale-scaling-test.vpk")
 set(TITLE_NAME "Sharpscale Scaling Test")
 set(TITLE_ID "AKRK00004")
-set(TITLE_VER "01.07")
+set(TITLE_VER "01.08")
 
 dolce_create_vpk("${VPK}" "${TITLE_ID}" "${SELF}"
   NAME "${TITLE_NAME}"

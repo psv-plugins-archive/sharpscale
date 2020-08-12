@@ -22,9 +22,10 @@ include("${DOLCESDK_CMAKE_FILE}" REQUIRED)
 project(sharpscale LANGUAGES C)
 
 add_compile_options(
-  -O3 -std=c99
+  -Os -std=c99
   -Wall -Wextra -Wdouble-promotion -Wshadow -Wundef
   -fsingle-precision-constant -fno-common
+  -ftree-vectorize -funsafe-math-optimizations
 )
 
 add_link_options(
@@ -71,6 +72,7 @@ target_link_libraries("${ELF}"
   SceSblACMgrForDriver_stub
   SceSysclibForDriver_stub
   SceSysmemForDriver_stub
+  SceThreadmgrForDriver_stub
 )
 
 target_compile_definitions("${ELF}" PRIVATE

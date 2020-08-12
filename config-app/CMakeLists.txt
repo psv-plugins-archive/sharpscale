@@ -36,8 +36,8 @@ target_include_directories("${ELF}"
 )
 
 target_link_libraries("${ELF}"
-  psp2dbg
   vita2d_sys
+  psp2dbg
 
   m
   gcc
@@ -48,6 +48,7 @@ target_link_libraries("${ELF}"
   SceDisplay_stub
   SceGxm_stub
   SceKernelDmacMgr_stub
+  SceKernelThreadMgr_stub
   SceLibKernel_stub
   ScePgf_stub
   SceProcessmgr_stub
@@ -74,7 +75,7 @@ dolce_create_self("${SELF}"
 set(VPK "sharpscale-config.vpk")
 set(TITLE_NAME "Sharpscale Configuration Menu")
 set(TITLE_ID "AKRK00005")
-set(TITLE_VER "01.11")
+set(TITLE_VER "01.12")
 
 dolce_create_vpk("${VPK}" "${TITLE_ID}" "${SELF}"
   NAME "${TITLE_NAME}"
