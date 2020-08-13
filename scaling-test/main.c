@@ -111,34 +111,37 @@ void _start(UNUSED int args, UNUSED void *argp) {
 	fnblit_set_fg(WHITE);
 	fnblit_set_bg(BLACK);
 
-	SceUID fb_mem_id = sceKernelAllocMemBlock(
-		"FramebufferMem",
-		SCE_KERNEL_MEMBLOCK_TYPE_USER_MAIN_PHYCONT_NC_RW,
-		ALIGN(FB_LEN, SCE_KERNEL_1MiB),
-		NULL);
-	GLZ(fb_mem_id);
-	int *fb_base;
-	sceKernelGetMemBlockBase(fb_mem_id, (void**)&fb_base);
+	SceUID fb_mem_id[2];
+	int *fb_base[2];
+	int cur_fb_idx = 0;
+
+	for (int i = 0; i < 2; i++) {
+		fb_mem_id[i] = sceKernelAllocMemBlock(
+			"FramebufferMem",
+			SCE_KERNEL_MEMBLOCK_TYPE_USER_MAIN_PHYCONT_NC_RW,
+			ALIGN(FB_LEN, SCE_KERNEL_1MiB),
+			NULL);
+		GLZ(fb_mem_id[i]);
+		sceKernelGetMemBlockBase(fb_mem_id[i], (void**)(fb_base + i));
+	}
 
 	SceDisplayFrameBuf fb;
 	int width, pitch, height;
 
 	void select_res(int idx) {
-		// blank the screen first
-		sceDisplaySetFrameBuf(NULL, SCE_DISPLAY_SETBUF_NEXTFRAME);
-		sceDisplayWaitVblankStartMulti(2);
+		cur_fb_idx = (cur_fb_idx + 1) % 2;
 
 		width = fb_res[idx].w;
 		pitch = ALIGN(width, 64);
 		height = fb_res[idx].h;
-		render(fb_base, width, pitch, height);
+		render(fb_base[cur_fb_idx], width, pitch, height);
 
-		fnblit_set_fb(fb_base, pitch, width, height);
+		fnblit_set_fb(fb_base[cur_fb_idx], pitch, width, height);
 		fnblit_printf(10, 10, "%dx%d", width, height);
 		fnblit_printf(10, height - 42, "Sharpscale Scaling Test");
 		fnblit_printf(10, height - 26, "Copyright 2020 浅倉麗子");
 
-		fb = (SceDisplayFrameBuf){sizeof(fb), fb_base, pitch, SCE_DISPLAY_PIXELFORMAT_A8B8G8R8, width, height};
+		fb = (SceDisplayFrameBuf){sizeof(fb), fb_base[cur_fb_idx], pitch, SCE_DISPLAY_PIXELFORMAT_A8B8G8R8, width, height};
 		int ret = sceDisplaySetFrameBuf(&fb, SCE_DISPLAY_SETBUF_NEXTFRAME);
 
 		if (ret == 0) {
@@ -147,12 +150,12 @@ void _start(UNUSED int args, UNUSED void *argp) {
 			SCE_DBG_LOG_ERROR("Set resolution %dx%d failed error %08X\n", width, height, ret);
 
 			UNUSED SceUInt32 start_time = sceKernelGetProcessTimeLow();
-			sceDmacMemset(fb_base, 0xFF, 960 * 544 * 4);
+			sceDmacMemset(fb_base[cur_fb_idx], 0xFF, 960 * 544 * 4);
 			SCE_DBG_LOG_DEBUG("Cleared in %d ms\n", (sceKernelGetProcessTimeLow() - start_time) / 1000);
 
-			fnblit_set_fb(fb_base, 960, 960, 544);
+			fnblit_set_fb(fb_base[cur_fb_idx], 960, 960, 544);
 			fnblit_printf(10, 10, "%dx%d failed", width, height);
-			fb = (SceDisplayFrameBuf){sizeof(fb), fb_base, 960, SCE_DISPLAY_PIXELFORMAT_A8B8G8R8, 960, 544};
+			fb = (SceDisplayFrameBuf){sizeof(fb), fb_base[cur_fb_idx], 960, SCE_DISPLAY_PIXELFORMAT_A8B8G8R8, 960, 544};
 		}
 	}
 
@@ -179,7 +182,7 @@ void _start(UNUSED int args, UNUSED void *argp) {
 		last_ctrl = ctrl;
 
 		sceDisplaySetFrameBuf(&fb, SCE_DISPLAY_SETBUF_NEXTFRAME);
-		sceDisplayWaitVblankStartMulti(2);
+		sceDisplayWaitVblankStart();
 	}
 
 fail:
