@@ -25,7 +25,8 @@ endif()
 
 set(FONT_BASE "unifont-13.0.02")
 set(FONT_FILE "${CMAKE_CURRENT_BINARY_DIR}/unifont.bdf.gz")
-set(SFN_FILE "${CMAKE_CURRENT_BINARY_DIR}/unifont.sfn")
+set(SFN_FILE "unifont.sfn")
+set(SFN_OBJ "${SFN_FILE}.o")
 
 file(DOWNLOAD
   "https://ftp.gnu.org/gnu/unifont/${FONT_BASE}/${FONT_BASE}.bdf.gz"
@@ -45,6 +46,11 @@ add_custom_command(OUTPUT "${SFN_FILE}"
     "${SFN_FILE}"
 )
 
+add_custom_command(OUTPUT "${SFN_OBJ}"
+  DEPENDS "${SFN_FILE}"
+  COMMAND "${CMAKE_LINKER}" --relocatable --format=binary --output="${SFN_OBJ}" "${SFN_FILE}"
+)
+
 # Build self
 
 set(ELF "scaling-test.elf")
@@ -52,6 +58,7 @@ set(SELF "scaling-test.self")
 
 add_executable("${ELF}"
   main.c
+  "${SFN_OBJ}"
 )
 
 target_link_libraries("${ELF}"
@@ -79,11 +86,10 @@ dolce_create_self("${SELF}"
 set(VPK "sharpscale-scaling-test.vpk")
 set(TITLE_NAME "Sharpscale Scaling Test")
 set(TITLE_ID "AKRK00004")
-set(TITLE_VER "01.08")
+set(TITLE_VER "01.09")
 
 dolce_create_vpk("${VPK}" "${TITLE_ID}" "${SELF}"
   NAME "${TITLE_NAME}"
   VERSION "${TITLE_VER}"
   FILE icon0.png sce_sys/icon0.png
-  FILE "${SFN_FILE}" font.sfn
 )
