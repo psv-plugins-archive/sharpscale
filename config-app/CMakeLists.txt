@@ -31,10 +31,6 @@ add_executable("${ELF}"
   main.c
 )
 
-target_include_directories("${ELF}"
-  PRIVATE "${CMAKE_SOURCE_DIR}"
-)
-
 target_link_libraries("${ELF}"
   vita2d_sys
   psp2dbg

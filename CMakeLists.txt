@@ -32,6 +32,10 @@ add_link_options(
   -nostdlib
 )
 
+include_directories(
+  "${CMAKE_SOURCE_DIR}/include"
+)
+
 set(LOG_ENABLE "1" CACHE STRING "Enable logging")
 set(FILELOG_ENABLE "0" CACHE STRING "Enable file logging")
 set(LOG_LEVEL "SCE_DBG_LOG_LEVEL_INFO" CACHE STRING "Log verbosity level")
