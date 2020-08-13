@@ -58,7 +58,7 @@ static res_t fb_res[FB_RES_LEN] = {
 };
 
 static void render(int *fb_base, int width, int pitch, int height) {
-	SceUInt32 start_time = sceKernelGetProcessTimeLow();
+	UNUSED SceUInt32 start_time = sceKernelGetProcessTimeLow();
 
 	int32x2x4_t vert_line = vld4_s32((int32_t[]){WHITE, BLACK, WHITE, BLACK, WHITE, BLACK, WHITE, BLACK});
 
@@ -104,7 +104,7 @@ static void render(int *fb_base, int width, int pitch, int height) {
 	SCE_DBG_LOG_DEBUG("Rendered in %d ms\n", (sceKernelGetProcessTimeLow() - start_time) / 1000);
 }
 
-void _start(int args, void *argp) { (void)args; (void)argp;
+void _start(UNUSED int args, UNUSED void *argp) {
 	SCE_DBG_FILELOG_INIT("ux0:/sharpscale-scaling-test.log");
 
 	fnblit_set_font(_binary_unifont_sfn_start);
@@ -146,7 +146,7 @@ void _start(int args, void *argp) { (void)args; (void)argp;
 		} else {
 			SCE_DBG_LOG_ERROR("Set resolution %dx%d failed error %08X\n", width, height, ret);
 
-			SceUInt32 start_time = sceKernelGetProcessTimeLow();
+			UNUSED SceUInt32 start_time = sceKernelGetProcessTimeLow();
 			sceDmacMemset(fb_base, 0xFF, 960 * 544 * 4);
 			SCE_DBG_LOG_DEBUG("Cleared in %d ms\n", (sceKernelGetProcessTimeLow() - start_time) / 1000);
 

@@ -26,6 +26,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <psp2dbg.h>
 #include <vita2d_sys.h>
 
+#include "common.h"
 #include "sharpscale.h"
 
 void *memset(void *dest, int ch, size_t count) {
@@ -48,7 +49,7 @@ static int text_yellow(int a) {
 	return a ? TEXT_YELLOW : TEXT_BLACK;
 }
 
-void _start(int args, void *argp) { (void)args; (void)argp;
+void _start(UNUSED int args, UNUSED void *argp) {
 	SCE_DBG_FILELOG_INIT("ux0:/sharpscale-config.log");
 
 	// Show application memory budget information

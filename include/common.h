@@ -26,4 +26,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define ALIGN(x, a) (((x) + ((a) - 1)) & ~((a) - 1))
 
+#define UNUSED __attribute__ ((unused))
+
 #endif
