@@ -28,15 +28,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <psp2dbg.h>
 #include <taihen.h>
 
+#include "common.h"
 #include "config.h"
 #include "scedisplay.h"
 #include "sharpscale_internal.h"
-
-#define GLZ(x) do {\
-	if ((x) < 0) { goto fail; }\
-} while (0)
-
-#define MIN(x, y) ((x) < (y) ? (x) : (y))
 
 #define N_INJECT 9
 static SceUID inject_id[N_INJECT];

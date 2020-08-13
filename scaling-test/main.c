@@ -28,9 +28,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <fnblit.h>
 #include <psp2dbg.h>
 
-extern char _binary_unifont_sfn_start[];
+#include "common.h"
 
-#define ALIGN(x, a) (((x) + ((a) - 1)) & ~((a) - 1))
+extern char _binary_unifont_sfn_start[];
 
 #define WHITE 0xFFFFFFFF
 #define BLACK 0x00000000
@@ -116,7 +116,7 @@ void _start(int args, void *argp) { (void)args; (void)argp;
 		SCE_KERNEL_MEMBLOCK_TYPE_USER_MAIN_PHYCONT_NC_RW,
 		ALIGN(FB_LEN, SCE_KERNEL_1MiB),
 		NULL);
-	if (fb_mem_id < 0) { goto done; }
+	GLZ(fb_mem_id);
 	int *fb_base;
 	sceKernelGetMemBlockBase(fb_mem_id, (void**)&fb_base);
 
@@ -182,7 +182,7 @@ void _start(int args, void *argp) { (void)args; (void)argp;
 		sceDisplayWaitVblankStartMulti(2);
 	}
 
-done:
+fail:
 	SCE_DBG_FILELOG_TERM();
 	sceKernelExitProcess(0);
 }

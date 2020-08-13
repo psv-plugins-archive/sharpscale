@@ -32,7 +32,7 @@ void *memset(void *dest, int ch, size_t count) {
 	return sceClibMemset(dest, ch, count);
 }
 
-#define CLIB_HEAP_SIZE 256 * 1024
+#define CLIB_HEAP_SIZE SCE_KERNEL_256KiB
 
 #define BG_COLOUR     0xFFDFDFDF
 #define TEXT_BLACK    0xFF202020
