@@ -69,6 +69,7 @@ target_link_libraries("${ELF}"
   SceDisplay_stub
   SceIofilemgr_stub
   SceKernelDmacMgr_stub
+  SceLibc_stub
   SceLibKernel_stub
   SceSysmem_stub
 )
@@ -86,7 +87,7 @@ dolce_create_self("${SELF}"
 set(VPK "sharpscale-scaling-test.vpk")
 set(TITLE_NAME "Sharpscale Scaling Test")
 set(TITLE_ID "AKRK00004")
-set(TITLE_VER "01.09")
+set(TITLE_VER "01.10")
 
 dolce_create_vpk("${VPK}" "${TITLE_ID}" "${SELF}"
   NAME "${TITLE_NAME}"

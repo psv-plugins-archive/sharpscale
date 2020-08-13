@@ -15,9 +15,11 @@ You should have received a copy of the GNU General Public License
 along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
+#include <arm_neon.h>
+#include <string.h>
+
 #include <psp2/ctrl.h>
 #include <psp2/display.h>
-#include <psp2/kernel/clib.h>
 #include <psp2/kernel/dmac.h>
 #include <psp2/kernel/iofilemgr.h>
 #include <psp2/kernel/processmgr.h>
@@ -56,25 +58,28 @@ static res_t fb_res[FB_RES_LEN] = {
 };
 
 static void render(int *fb_base, int width, int pitch, int height) {
-	for (int i = 0; i < width/2; i++) {
-		for (int j = 0; j < height/2; j++) {
-			fb_base[j * pitch + i] = (j % 2 == 0) ? WHITE : BLACK;
+	SceUInt32 start_time = sceKernelGetProcessTimeLow();
+
+	int32x2x4_t vert_line = vld4_s32((int32_t[]){WHITE, BLACK, WHITE, BLACK, WHITE, BLACK, WHITE, BLACK});
+
+	for (int j = 0; j < height / 2; j++) {
+		memset(fb_base + j * pitch, (j % 2 == 0) ? WHITE : BLACK, width / 2 * 4);
+
+		int i = width / 2;
+		while (i < width) {
+			vst4_s32(fb_base + j * pitch + i, vert_line);
+			i += 8;
 		}
 	}
-	for (int i = width/2; i < width; i++) {
-		for (int j = 0; j < height/2; j++) {
-			fb_base[j * pitch + i] = (i % 2 == 0) ? WHITE : BLACK;
+
+	for (int j = height / 2; j < height; j++) {
+		int i = 0;
+		while (i < width / 2) {
+			vst4_s32(fb_base + j * pitch + i, vert_line);
+			i += 8;
 		}
-	}
-	for (int i = 0; i < width/2; i++) {
-		for (int j = height/2; j < height; j++) {
-			fb_base[j * pitch + i] = (i % 2 == 0) ? WHITE : BLACK;
-		}
-	}
-	for (int i = width/2; i < width; i++) {
-		for (int j = height/2; j < height; j++) {
-			fb_base[j * pitch + i] = (j % 2 == 0) ? WHITE : BLACK;
-		}
+
+		memset(fb_base + j * pitch + width / 2, (j % 2 == 0) ? WHITE : BLACK, width / 2 * 4);
 	}
 
 	int crop = 0;
@@ -95,6 +100,8 @@ static void render(int *fb_base, int width, int pitch, int height) {
 			fb_base[(height - crop - 0) * pitch + i] = RED;
 		}
 	}
+
+	SCE_DBG_LOG_DEBUG("Rendered in %d ms\n", (sceKernelGetProcessTimeLow() - start_time) / 1000);
 }
 
 void _start(int args, void *argp) { (void)args; (void)argp;
@@ -106,8 +113,8 @@ void _start(int args, void *argp) { (void)args; (void)argp;
 
 	SceUID fb_mem_id = sceKernelAllocMemBlock(
 		"FramebufferMem",
-		SCE_KERNEL_MEMBLOCK_TYPE_USER_CDRAM_RW,
-		ALIGN(FB_LEN, SCE_KERNEL_256KiB),
+		SCE_KERNEL_MEMBLOCK_TYPE_USER_MAIN_PHYCONT_NC_RW,
+		ALIGN(FB_LEN, SCE_KERNEL_1MiB),
 		NULL);
 	if (fb_mem_id < 0) { goto done; }
 	int *fb_base;
@@ -133,22 +140,26 @@ void _start(int args, void *argp) { (void)args; (void)argp;
 
 		fb = (SceDisplayFrameBuf){sizeof(fb), fb_base, pitch, SCE_DISPLAY_PIXELFORMAT_A8B8G8R8, width, height};
 		int ret = sceDisplaySetFrameBuf(&fb, SCE_DISPLAY_SETBUF_NEXTFRAME);
-		SCE_DBG_LOG_INFO("Set resolution %dx%d %s\n", width, height, ret == 0 ? "success" : "failed");
 
-		if (ret != 0) {
+		if (ret == 0) {
+			SCE_DBG_LOG_INFO("Set resolution %dx%d success\n", width, height);
+		} else {
+			SCE_DBG_LOG_ERROR("Set resolution %dx%d failed error %08X\n", width, height, ret);
+
+			SceUInt32 start_time = sceKernelGetProcessTimeLow();
 			sceDmacMemset(fb_base, 0xFF, 960 * 544 * 4);
+			SCE_DBG_LOG_DEBUG("Cleared in %d ms\n", (sceKernelGetProcessTimeLow() - start_time) / 1000);
+
 			fnblit_set_fb(fb_base, 960, 960, 544);
 			fnblit_printf(10, 10, "%dx%d failed", width, height);
 			fb = (SceDisplayFrameBuf){sizeof(fb), fb_base, 960, SCE_DISPLAY_PIXELFORMAT_A8B8G8R8, 960, 544};
-			sceDisplaySetFrameBuf(&fb, SCE_DISPLAY_SETBUF_NEXTFRAME);
 		}
 	}
 
 	int res_idx = 0;
 	select_res(res_idx);
 
-	SceCtrlData last_ctrl;
-	sceClibMemset(&last_ctrl, 0x00, sizeof(last_ctrl));
+	SceCtrlData last_ctrl = {0};
 
 	for (;;) {
 		SceCtrlData ctrl;
