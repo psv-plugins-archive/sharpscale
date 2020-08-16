@@ -71,7 +71,8 @@ dolce_create_self("${SELF}"
 set(VPK "sharpscale-config.vpk")
 set(TITLE_NAME "Sharpscale Configuration Menu")
 set(TITLE_ID "AKRK00005")
-set(TITLE_VER "01.12")
+set(TITLE_VER "01.13")
+set(DOLCE_MKSFOEX_FLAGS "${DOLCE_MKSFOEX_FLAGS} -s STITLE=\"Sharpscale Config Menu\"")
 
 dolce_create_vpk("${VPK}" "${TITLE_ID}" "${SELF}"
   NAME "${TITLE_NAME}"

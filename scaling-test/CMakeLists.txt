@@ -17,8 +17,10 @@ add_compile_options(-flto)
 
 if(FILELOG_ENABLE)
   set(LOG_PREFIX "[SharpscaleScalingTest] ")
+  set(PROGRAM_AUTHORITY "UNSAFE")
 else()
   set(LOG_PREFIX "\\033[0;33m[SharpscaleScalingTest]\\033[0m ")
+  set(PROGRAM_AUTHORITY "SAFE")
 endif()
 
 # Build font
@@ -80,6 +82,7 @@ target_compile_definitions("${ELF}" PRIVATE
 
 dolce_create_self("${SELF}"
   "${ELF}"
+  ${PROGRAM_AUTHORITY}
 )
 
 # Build VPK
@@ -87,7 +90,7 @@ dolce_create_self("${SELF}"
 set(VPK "sharpscale-scaling-test.vpk")
 set(TITLE_NAME "Sharpscale Scaling Test")
 set(TITLE_ID "AKRK00004")
-set(TITLE_VER "01.11")
+set(TITLE_VER "01.12")
 
 dolce_create_vpk("${VPK}" "${TITLE_ID}" "${SELF}"
   NAME "${TITLE_NAME}"
