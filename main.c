@@ -312,7 +312,7 @@ static void cleanup(void) {
 	SCE_DBG_FILELOG_TERM();
 }
 
-int module_start(UNUSED SceSize args, UNUSED const void *argp) {
+USED int module_start(UNUSED SceSize args, UNUSED const void *argp) {
 	int ret;
 
 	startup();
@@ -350,7 +350,7 @@ fail:
 	return SCE_KERNEL_START_FAILED;
 }
 
-int module_stop(UNUSED SceSize args, UNUSED const void *argp) {
+USED int module_stop(UNUSED SceSize args, UNUSED const void *argp) {
 	cleanup();
 	return SCE_KERNEL_STOP_SUCCESS;
 }

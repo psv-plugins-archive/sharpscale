@@ -23,6 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <psp2dbg.h>
 
+#include "common.h"
 #include "config.h"
 #include "sharpscale_internal.h"
 
@@ -125,7 +126,7 @@ fail:
 	return -1;
 }
 
-int SharpscaleGetConfig(SharpscaleConfig *config) {
+USED int SharpscaleGetConfig(SharpscaleConfig *config) {
 	if (!is_config_valid(&ss_config)) { goto fail; }
 	if (ksceKernelMemcpyKernelToUser((uintptr_t)config, &ss_config, sizeof(*config)) < 0) { goto fail; }
 
@@ -137,7 +138,7 @@ fail:
 	return -1;
 }
 
-int SharpscaleSetConfig(SharpscaleConfig *config) {
+USED int SharpscaleSetConfig(SharpscaleConfig *config) {
 	SharpscaleConfig kconfig;
 	if (ksceKernelMemcpyUserToKernel(&kconfig, (uintptr_t)config, sizeof(kconfig)) < 0) { goto fail; }
 	if (!is_config_valid(&kconfig)) { goto fail; }
