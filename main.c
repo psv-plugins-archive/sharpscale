@@ -345,8 +345,8 @@ USED int module_start(UNUSED SceSize args, UNUSED const void *argp) {
 	return SCE_KERNEL_START_SUCCESS;
 
 fail:
-	cleanup();
 	SCE_DBG_LOG_ERROR("module_start failed\n");
+	cleanup();
 	return SCE_KERNEL_START_FAILED;
 }
 
