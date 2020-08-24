@@ -56,11 +56,11 @@ add_compile_definitions(
 
 set(ELF "sharpscale.elf")
 set(SELF "sharpscale.skprx")
-set(VELF_CFG "exports.yml")
-set(SELF_STUB "sharpscale-stub")
+set(MODULE_INFO "sharpscale.yml")
+set(MODULE_STUB "sharpscale-stub")
 
 add_executable("${ELF}"
-  main.c
+  sharpscale.c
   config.c
 )
 
@@ -89,10 +89,10 @@ target_link_options("${ELF}" PRIVATE
 
 dolce_create_self("${SELF}"
   "${ELF}"
-  CONFIG "${VELF_CFG}"
+  CONFIG "${MODULE_INFO}"
 )
 
-dolce_create_stubs("${SELF_STUB}" "${SELF}" "${VELF_CFG}"
+dolce_create_stubs("${MODULE_STUB}" "${SELF}" "${MODULE_INFO}"
   KERNEL
   LIB Sharpscale_stub
 )
