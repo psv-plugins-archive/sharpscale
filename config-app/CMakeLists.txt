@@ -33,9 +33,6 @@ target_link_libraries("${ELF}"
   vita2d_sys
   psp2dbg
 
-  m
-  gcc
-
   Sharpscale_stub
   SceAppMgr_stub
   SceCtrl_stub
@@ -48,6 +45,8 @@ target_link_libraries("${ELF}"
   SceProcessmgr_stub
   SceSysmem_stub
   SceSysmodule_stub
+
+  m
 )
 
 target_compile_definitions("${ELF}" PRIVATE

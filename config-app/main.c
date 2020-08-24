@@ -29,10 +29,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "common.h"
 #include "sharpscale.h"
 
-void *memset(void *dest, int ch, size_t count) {
-	return sceClibMemset(dest, ch, count);
-}
-
 #define CLIB_HEAP_SIZE SCE_KERNEL_256KiB
 
 #define BG_COLOUR     0xFFDFDFDF
@@ -54,7 +50,8 @@ void _start(UNUSED int args, UNUSED void *argp) {
 
 	// Show application memory budget information
 
-	SceAppMgrBudgetInfo info = {0};
+	SceAppMgrBudgetInfo info;
+	sceClibMemset(&info, 0x00, sizeof(info));
 	info.size = sizeof(info);
 	if (0 == sceAppMgrGetBudgetInfo(&info)) {
 		SCE_DBG_LOG_INFO("Free Main: %d KB\n", info.freeMain / 1024);
@@ -123,8 +120,10 @@ void _start(UNUSED int args, UNUSED void *argp) {
 	}
 
 	int ui_row = 0;
-	SceCtrlData last_ctrl = {0};
-	SharpscaleConfig config = {0};
+	SceCtrlData last_ctrl;
+	sceClibMemset(&last_ctrl, 0x00, sizeof(last_ctrl));
+	SharpscaleConfig config;
+	sceClibMemset(&config, 0x00, sizeof(config));
 
 	// Stubs have ARM instructions
 	uint32_t *opcode = (uint32_t*)SharpscaleGetConfig;

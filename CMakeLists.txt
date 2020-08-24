@@ -65,9 +65,8 @@ add_executable("${ELF}"
 )
 
 target_link_libraries("${ELF}"
-  m
-
   psp2dbgForKernel
+
   taihenForKernel_stub
   taihenModuleUtils_stub
 
@@ -77,6 +76,8 @@ target_link_libraries("${ELF}"
   SceSysclibForDriver_stub
   SceSysmemForDriver_stub
   SceThreadmgrForDriver_stub
+
+  m
 )
 
 target_compile_definitions("${ELF}" PRIVATE
