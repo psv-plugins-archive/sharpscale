@@ -36,7 +36,8 @@ file(DOWNLOAD
 
 add_custom_command(OUTPUT "${SFN_FILE}"
   DEPENDS "${FONT_FILE}"
-  COMMAND bit2sfn
+  COMMAND "${CMAKE_COMMAND}" -E env PATH="${DEP_INSTALL_PREFIX}/bin:$ENV{PATH}"
+    bit2sfn
     -r "Basic Latin"        "${FONT_FILE}"
     -r "Latin-1 Supplement" "${FONT_FILE}"
     -r 0x6D45 0x6D46        "${FONT_FILE}"

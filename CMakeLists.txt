@@ -19,6 +19,9 @@ set(CMAKE_TOOLCHAIN_FILE "$ENV{DOLCESDK}/share/dolce.toolchain.cmake" CACHE PATH
 set(DOLCESDK_CMAKE_FILE "$ENV{DOLCESDK}/share/dolce.cmake" CACHE PATH "DolceSDK CMake functions file")
 include("${DOLCESDK_CMAKE_FILE}" REQUIRED)
 
+option(CMAKE_TLS_VERIFY "Verify TLS" ON)
+include(ExternalProject REQUIRED)
+
 project(sharpscale LANGUAGES C)
 
 add_compile_options(
@@ -51,6 +54,47 @@ if(FILE_LOGGING)
 else()
   set(LOG_PREFIX "\\033[0;35m[Sharpscale]\\033[0m ")
 endif()
+
+# External dependencies
+
+set(DEP_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/dep")
+include_directories("${DEP_INSTALL_PREFIX}/include")
+link_directories("${DEP_INSTALL_PREFIX}/lib")
+
+ExternalProject_Add(dep-psp2dbg
+  URL https://git.shotatoshounenwachigau.moe/vita/psp2dbg/snapshot/psp2dbg-master.tar.gz
+  PREFIX dep/psp2dbg
+  CMAKE_ARGS -D CMAKE_INSTALL_PREFIX=${DEP_INSTALL_PREFIX}
+  EXCLUDE_FROM_ALL ON
+)
+
+ExternalProject_Add(dep-fnblit
+  URL https://git.shotatoshounenwachigau.moe/vita/fnblit/snapshot/fnblit-master.tar.gz
+  PREFIX dep/fnblit
+  CMAKE_ARGS -D CMAKE_INSTALL_PREFIX=${DEP_INSTALL_PREFIX}
+  SOURCE_SUBDIR fnblit
+  EXCLUDE_FROM_ALL ON
+)
+
+ExternalProject_Add(dep-sfnconv
+  URL https://git.shotatoshounenwachigau.moe/vita/fnblit/snapshot/fnblit-master.tar.gz
+  PREFIX dep/sfnconv
+  CMAKE_ARGS -D CMAKE_INSTALL_PREFIX=${DEP_INSTALL_PREFIX}
+  SOURCE_SUBDIR sfnconv
+  EXCLUDE_FROM_ALL ON
+)
+
+ExternalProject_Add(dep-vita2d_sys
+  URL https://git.shotatoshounenwachigau.moe/vita/vita2d/snapshot/vita2d-lowmem.tar.gz
+  PREFIX dep/vita2d_sys
+  CMAKE_ARGS -D CMAKE_INSTALL_PREFIX=${DEP_INSTALL_PREFIX}
+  SOURCE_SUBDIR libvita2d_sys
+  EXCLUDE_FROM_ALL ON
+)
+
+add_custom_target(dep-all
+  DEPENDS dep-psp2dbg dep-fnblit dep-sfnconv dep-vita2d_sys
+)
 
 # Build self
 
