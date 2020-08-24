@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-if(FILELOG_ENABLE)
+if(FILE_LOGGING)
   set(LOG_PREFIX "[SharpscaleScalingTest] ")
   set(PROGRAM_AUTHORITY "UNSAFE")
 else()

@@ -105,7 +105,7 @@ static void render(int *fb_base, int width, int pitch, int height) {
 }
 
 void _start(UNUSED int args, UNUSED void *argp) {
-	SCE_DBG_FILELOG_INIT("ux0:/sharpscale-scaling-test.log");
+	SCE_DBG_FILE_LOGGING_INIT("ux0:/sharpscale-scaling-test.log");
 
 	fnblit_set_font(_binary_unifont_sfn_start);
 	fnblit_set_fg(WHITE);
@@ -186,6 +186,6 @@ void _start(UNUSED int args, UNUSED void *argp) {
 	}
 
 fail:
-	SCE_DBG_FILELOG_TERM();
+	SCE_DBG_FILE_LOGGING_TERM();
 	sceKernelExitProcess(0);
 }

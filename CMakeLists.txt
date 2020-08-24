@@ -36,21 +36,21 @@ include_directories(
   "${CMAKE_SOURCE_DIR}/include"
 )
 
-set(LOG_ENABLE "1" CACHE STRING "Enable logging")
-set(FILELOG_ENABLE "0" CACHE STRING "Enable file logging")
-set(LOG_LEVEL "SCE_DBG_LOG_LEVEL_INFO" CACHE STRING "Log verbosity level")
+set(LOGGING "1" CACHE STRING "Enable logging")
+set(FILE_LOGGING "0" CACHE STRING "Enable file logging")
+set(LOG_LEVEL "INFO" CACHE STRING "Log verbosity level")
 
-if(FILELOG_ENABLE)
+add_compile_definitions(
+  SCE_DBG_LOGGING_ENABLED=${LOGGING}
+  SCE_DBG_FILE_LOGGING_ENABLED=${FILE_LOGGING}
+  SCE_DBG_MINIMUM_LOG_LEVEL=SCE_DBG_LOG_LEVEL_${LOG_LEVEL}
+)
+
+if(FILE_LOGGING)
   set(LOG_PREFIX "[Sharpscale] ")
 else()
   set(LOG_PREFIX "\\033[0;35m[Sharpscale]\\033[0m ")
 endif()
-
-add_compile_definitions(
-  SCE_DBG_LOGGING_ENABLED=${LOG_ENABLE}
-  SCE_DBG_FILELOG_ENABLED=${FILELOG_ENABLE}
-  SCE_DBG_MINIMUM_LOG_LEVEL=${LOG_LEVEL}
-)
 
 # Build self
 

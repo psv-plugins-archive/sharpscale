@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-if(FILELOG_ENABLE)
+if(FILE_LOGGING)
   set(LOG_PREFIX "[SharpscaleConfiguration] ")
 else()
   set(LOG_PREFIX "\\033[0;33m[SharpscaleConfiguration]\\033[0m ")

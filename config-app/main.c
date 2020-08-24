@@ -50,7 +50,7 @@ static int text_yellow(int a) {
 }
 
 void _start(UNUSED int args, UNUSED void *argp) {
-	SCE_DBG_FILELOG_INIT("ux0:/sharpscale-config.log");
+	SCE_DBG_FILE_LOGGING_INIT("ux0:/sharpscale-config.log");
 
 	// Show application memory budget information
 
@@ -226,6 +226,6 @@ void _start(UNUSED int args, UNUSED void *argp) {
 	}
 
 done:
-	SCE_DBG_FILELOG_TERM();
+	SCE_DBG_FILE_LOGGING_TERM();
 	sceKernelExitProcess(0);
 }

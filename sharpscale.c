@@ -300,7 +300,7 @@ done:
 }
 
 static void startup(void) {
-	SCE_DBG_FILELOG_INIT("ur0:/sharpscale.log");
+	SCE_DBG_FILE_LOGGING_INIT("ur0:/sharpscale.log");
 	memset(inject_id, 0xFF, sizeof(inject_id));
 	memset(hook_id, 0xFF, sizeof(hook_id));
 	memset(hook_ref, 0xFF, sizeof(hook_ref));
@@ -309,7 +309,7 @@ static void startup(void) {
 static void cleanup(void) {
 	for (int i = 0; i < N_INJECT; i++) { UNINJECT(i); }
 	for (int i = 0; i < N_HOOK; i++) { UNHOOK(i); }
-	SCE_DBG_FILELOG_TERM();
+	SCE_DBG_FILE_LOGGING_TERM();
 }
 
 USED int module_start(UNUSED SceSize args, UNUSED const void *argp) {
